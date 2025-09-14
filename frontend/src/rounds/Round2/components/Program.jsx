@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../../../services/api';
 import round2Service from '../../../services/round2Service';
 
-const Program = ({ onSubmit, teamId }) => {
+const Program = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const [code, setCode] = useState('');
     const [timeLeft, setTimeLeft] = useState(1500); // 25 minutes
     const [isRunning, setIsRunning] = useState(false);
@@ -64,8 +64,8 @@ Fibonacci sequence up to 5 terms:
     useEffect(() => {
         let interval = null;
 
-        // Auto-start timer when component mounts
-        if (!isRunning && timeLeft === 1500) {
+        // Auto-start timer when component mounts and quiz has started
+        if (!isRunning && timeLeft === 1500 && isQuizStarted) {
             setIsRunning(true);
         }
 

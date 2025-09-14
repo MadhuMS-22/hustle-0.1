@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../../../services/api';
 import round2Service from '../../../services/round2Service';
 
-const Trace = ({ onSubmit, teamId }) => {
+const Trace = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const [output, setOutput] = useState('');
     const [timeLeft, setTimeLeft] = useState(900); // 15 minutes
     const [isRunning, setIsRunning] = useState(false);
@@ -62,8 +62,8 @@ int main() {
     useEffect(() => {
         let interval = null;
 
-        // Auto-start timer when component mounts
-        if (!isRunning && timeLeft === 900) {
+        // Auto-start timer when component mounts and quiz has started
+        if (!isRunning && timeLeft === 900 && isQuizStarted) {
             setIsRunning(true);
         }
 
