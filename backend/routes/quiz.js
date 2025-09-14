@@ -22,8 +22,7 @@ router.get('/apt/:step', async (req, res) => {
         const question = questions.aptitude[step];
         res.json({
             question: question.question,
-            options: question.options,
-            correct: question.correctAnswerIndex
+            options: question.options
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

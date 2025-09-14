@@ -1,8 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import questionsData from './questions.json';
+import round3Service from '../../services/round3Service';
 import competitionService from '../../services/competitionService';
 import authService from '../../services/authService';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Round3Page Error Boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+          <div className="w-full max-w-2xl p-8 bg-red-900 rounded-xl shadow-lg text-center">
+            <h1 className="text-3xl font-bold mb-4 text-red-400">Something went wrong</h1>
+            <p className="text-lg text-red-200 mb-6">
+              There was an error loading Round 3. Please refresh the page or contact support.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const AdminPage = ({ onGoBack }) => {
   const [scores, setScores] = useState([]);
@@ -10,9 +49,38 @@ const AdminPage = ({ onGoBack }) => {
   const [error, setError] = useState(null);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [showPrograms, setShowPrograms] = useState(false);
+  const [questionsData, setQuestionsData] = useState(null);
 
   // Maximum possible score (calculated from questions.json - 36 puzzle blocks total)
   const maxPossibleScore = 36;
+
+  // Fetch questions from database
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        console.log('Fetching Round 3 questions from database...');
+        const response = await round3Service.getRound3Questions();
+        console.log('Questions response:', response);
+
+        if (response && response.data && response.data.data) {
+          setQuestionsData(response.data.data);
+          console.log('Questions loaded successfully:', response.data.data);
+        } else if (response && response.data) {
+          // Fallback: maybe the data is directly in response.data
+          setQuestionsData(response.data);
+          console.log('Questions loaded successfully (fallback):', response.data);
+        } else {
+          console.error('Invalid response structure:', response);
+          setError('Invalid questions data received');
+        }
+      } catch (error) {
+        console.error('Error fetching Round 3 questions:', error);
+        setError('Failed to load questions: ' + error.message);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   // Format time function
   const formatTime = (seconds) => {
@@ -25,6 +93,11 @@ const AdminPage = ({ onGoBack }) => {
   const extractQuestionProgram = (team, questionIndex) => {
     if (!team.round3QuestionResults || !Array.isArray(team.round3QuestionResults)) {
       return { program: "No program data available for this question.", hasErrors: false };
+    }
+
+    // Check if questionsData is loaded
+    if (!questionsData || !questionsData.questionOrders || !questionsData.questions) {
+      return { program: "Questions data is loading...", hasErrors: false };
     }
 
     // Get the question order for this team
@@ -40,6 +113,10 @@ const AdminPage = ({ onGoBack }) => {
     let program = "";
     let hasErrors = false;
     const codeBlocks = [];
+
+    if (!question.codeBlocks || !Array.isArray(question.codeBlocks)) {
+      return { program: "Question code blocks not available.", hasErrors: false };
+    }
 
     question.codeBlocks.forEach((block, blockIndex) => {
       if (block.isPuzzle) {
@@ -129,12 +206,12 @@ const AdminPage = ({ onGoBack }) => {
     setSelectedTeam(null);
   };
 
-  if (loading) {
+  if (loading || !questionsData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
-          Loading scores...
+          {loading ? 'Loading scores...' : 'Loading questions...'}
         </div>
       </div>
     );
@@ -176,6 +253,11 @@ const AdminPage = ({ onGoBack }) => {
             <h2 className="text-2xl font-bold mb-4 text-blue-400">Program by Question</h2>
             <div className="space-y-8">
               {(() => {
+                // Check if questionsData is loaded
+                if (!questionsData || !questionsData.questionOrders || !questionsData.questions) {
+                  return <div className="text-center text-gray-400">Loading questions...</div>;
+                }
+
                 // Get the question order for this team
                 const teamOrder = questionsData.questionOrders.find(order => order.orderId === selectedTeam.round3QuestionOrder);
                 const orderedQuestionIds = teamOrder ? teamOrder.questionIds : [1, 2, 3, 4, 5];
@@ -446,8 +528,41 @@ const Round3Page = () => {
   const [showValidation, setShowValidation] = useState(false);
   const [questionOrder, setQuestionOrder] = useState(null);
   const [orderedQuestions, setOrderedQuestions] = useState([]);
+  const [questionsData, setQuestionsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const questions = questionsData.questions;
+  const questions = questionsData?.questions || [];
+
+  // Fetch questions from database
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        console.log('Fetching Round 3 questions from database...');
+        const response = await round3Service.getRound3Questions();
+        console.log('Questions response:', response);
+
+        if (response && response.data && response.data.data) {
+          setQuestionsData(response.data.data);
+          console.log('Questions loaded successfully:', response.data.data);
+        } else if (response && response.data) {
+          // Fallback: maybe the data is directly in response.data
+          setQuestionsData(response.data);
+          console.log('Questions loaded successfully (fallback):', response.data);
+        } else {
+          console.error('Invalid response structure:', response);
+          setError('Invalid questions data received');
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching Round 3 questions:', error);
+        setError('Failed to load questions: ' + error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   // Get team data from localStorage
   useEffect(() => {
@@ -464,6 +579,12 @@ const Round3Page = () => {
     if (questionOrder) {
       return questionOrder;
     }
+
+    // Check if questionsData is loaded
+    if (!questionsData || !questionsData.questionOrders || questionsData.questionOrders.length === 0) {
+      return null;
+    }
+
     // Randomly select one of the 5 question orders
     const randomOrderIndex = Math.floor(Math.random() * questionsData.questionOrders.length);
     const selectedOrder = questionsData.questionOrders[randomOrderIndex];
@@ -477,6 +598,9 @@ const Round3Page = () => {
       return orderedQuestions;
     }
     const order = getQuestionOrder();
+    if (!order || !order.questionIds) {
+      return [];
+    }
     const ordered = order.questionIds.map(id =>
       questions.find(q => q.id === id)
     ).filter(Boolean);
@@ -486,7 +610,12 @@ const Round3Page = () => {
 
   // Initialize ordered questions list
   const orderedQuestionsList = getOrderedQuestions();
-  const currentQuestion = orderedQuestionsList && orderedQuestionsList[currentQuestionIndex];
+  const currentQuestion = orderedQuestionsList &&
+    Array.isArray(orderedQuestionsList) &&
+    currentQuestionIndex >= 0 &&
+    currentQuestionIndex < orderedQuestionsList.length
+    ? orderedQuestionsList[currentQuestionIndex]
+    : null;
 
   // Maximum possible score (36 puzzle blocks total across all 5 questions)
   const maxPossibleScore = 36;
@@ -533,6 +662,12 @@ const Round3Page = () => {
       return;
     }
 
+    // Check if questions are loaded
+    if (!questionsData || !questionsData.questionOrders || !questionsData.questions) {
+      setFeedbackMessage('Questions are still loading. Please wait...');
+      return;
+    }
+
     // Initialize question order and ordered questions
     getQuestionOrder();
     getOrderedQuestions();
@@ -565,7 +700,12 @@ const Round3Page = () => {
 
   const handleNextQuestion = () => {
     // Check if all puzzle blocks in current question are answered
-    const currentQuestion = orderedQuestionsList && orderedQuestionsList[currentQuestionIndex];
+    const currentQuestion = orderedQuestionsList &&
+      Array.isArray(orderedQuestionsList) &&
+      currentQuestionIndex >= 0 &&
+      currentQuestionIndex < orderedQuestionsList.length
+      ? orderedQuestionsList[currentQuestionIndex]
+      : null;
     if (!currentQuestion) {
       setFeedbackMessage('Error: Question not found. Please refresh and try again.');
       return;
@@ -758,6 +898,37 @@ const Round3Page = () => {
     return <AdminPage onGoBack={() => setIsViewingAdmin(false)} />;
   }
 
+  // Show loading state while fetching questions
+  if (loading || !questionsData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+          <h2 className="text-xl font-bold mb-2">Loading Questions...</h2>
+          <p className="text-gray-300">Please wait while we load Round 3 questions from the database.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+        <div className="text-center text-red-500">
+          <h2 className="text-2xl font-bold mb-4">Error Loading Round 3</h2>
+          <p className="text-lg mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-6xl p-8 bg-gray-800 rounded-xl shadow-lg">
@@ -768,7 +939,7 @@ const Round3Page = () => {
           Complete 5 C programming puzzles. Each question has a 5-minute timer.
         </p>
 
-        {!quizStarted ? (
+        {!quizStarted || !questionsData || !questionsData.questionOrders || !questionsData.questions ? (
           <div className="text-center">
             <div className="mb-6">
               <h2 className="text-2xl font-bold mb-4">C Code Puzzle Game</h2>
@@ -797,9 +968,16 @@ const Round3Page = () => {
             <div className="flex justify-center gap-4">
               <button
                 onClick={handleStartQuiz}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105"
+                disabled={!questionsData || !questionsData.questionOrders || !questionsData.questions}
+                className={`font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 ${!questionsData || !questionsData.questionOrders || !questionsData.questions
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+                  }`}
               >
-                Start Quiz
+                {!questionsData || !questionsData.questionOrders || !questionsData.questions
+                  ? 'Loading Questions...'
+                  : 'Start Quiz'
+                }
               </button>
             </div>
           </div>
@@ -919,4 +1097,13 @@ const Round3Page = () => {
   );
 };
 
-export default Round3Page;
+// Wrap the component with error boundary
+const Round3PageWithErrorBoundary = (props) => {
+  return (
+    <ErrorBoundary>
+      <Round3Page {...props} />
+    </ErrorBoundary>
+  );
+};
+
+export default Round3PageWithErrorBoundary;

@@ -85,8 +85,7 @@ export const getRound2AptitudeQuestion = async (req, res) => {
             success: true,
             data: {
                 question: question.question,
-                options: question.options,
-                correct: question.correctAnswerIndex
+                options: question.options
             }
         });
     } catch (error) {

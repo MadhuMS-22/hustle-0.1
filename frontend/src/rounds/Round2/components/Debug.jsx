@@ -1,14 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../../../services/api';
+import round2Service from '../../../services/round2Service';
 
 const Debug = ({ onSubmit, teamId }) => {
     const [code, setCode] = useState('');
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
     const [isRunning, setIsRunning] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [codeToDebug, setCodeToDebug] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const autoSaveTimeoutRef = useRef(null);
 
-    const codeToDebug = `#include <stdio.h>
+    // Fetch debug question from database
+    useEffect(() => {
+        const fetchDebugQuestion = async () => {
+            try {
+                setLoading(true);
+                const response = await round2Service.getCodingQuestion('debug');
+                console.log('Debug API Response:', response);
+                if (response && response.data) {
+                    console.log('Setting codeToDebug:', response.data.code);
+                    setCodeToDebug(response.data.code);
+                } else {
+                    // Fallback to hardcoded question if database fetch fails
+                    setCodeToDebug(`#include <stdio.h>
 
 int main() {
     int arr[] = {1, 2, 3, 4, 5};
@@ -20,12 +36,40 @@ int main() {
     
     printf("Sum: %d\\n", sum);
     return 0;
-}`;
+}`);
+                }
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching debug question:', error);
+                setError('Failed to load debug question');
+                // Use fallback question
+                setCodeToDebug(`#include <stdio.h>
 
-    // Initialize code only once when component mounts
-    useEffect(() => {
-        setCode(codeToDebug);
+int main() {
+    int arr[] = {1, 2, 3, 4, 5};
+    int sum = 0;
+    
+    for (int i = 0; i <= 5; i++) {
+        sum += arr[i];
+    }
+    
+    printf("Sum: %d\\n", sum);
+    return 0;
+}`);
+                setLoading(false);
+            }
+        };
+
+        fetchDebugQuestion();
     }, []);
+
+    // Update code when codeToDebug changes
+    useEffect(() => {
+        if (codeToDebug) {
+            console.log('Updating code with:', codeToDebug);
+            setCode(codeToDebug);
+        }
+    }, [codeToDebug]);
 
     useEffect(() => {
         let interval = null;
@@ -112,6 +156,45 @@ int main() {
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
+
+    // Show loading state while fetching question
+    if (loading) {
+        return (
+            <div className="min-h-screen p-4">
+                <div className="max-w-7xl mx-auto">
+                    <div className="glass-dark rounded-2xl shadow-2xl p-4 mb-4">
+                        <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+                            <h2 className="text-xl font-bold text-white mb-2">Loading Debug Question...</h2>
+                            <p className="text-gray-300">Please wait while we load the debug challenge.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state if there's an error
+    if (error) {
+        return (
+            <div className="min-h-screen p-4">
+                <div className="max-w-7xl mx-auto">
+                    <div className="glass-dark rounded-2xl shadow-2xl p-4 mb-4">
+                        <div className="text-center py-8">
+                            <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Question</h2>
+                            <p className="text-gray-300 mb-4">{error}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen p-4">

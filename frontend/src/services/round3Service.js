@@ -2,6 +2,16 @@ import apiService from './api.js';
 import adminAuthService from './adminAuthService.js';
 
 class Round3Service {
+    // Get Round 3 questions from database
+    async getRound3Questions() {
+        try {
+            const response = await apiService.get('/questions/round3');
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     // Submit Round 3 results
     async submitRound3(round3Data) {
         try {

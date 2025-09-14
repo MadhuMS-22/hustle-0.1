@@ -25,7 +25,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/round-2" element={<ErrorBoundary><Round2Page /></ErrorBoundary>} />
           <Route path="/round2/admin" element={<Round2AdminPage />} />
-          <Route path="/round-3" element={<Round3Page />} />
+          <Route path="/round-3" element={<ErrorBoundary><Round3Page /></ErrorBoundary>} />
           <Route path="/admin/round3" element={
             <ProtectedAdminRoute>
               <Round3AdminPage />

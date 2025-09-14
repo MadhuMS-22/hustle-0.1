@@ -43,13 +43,35 @@ const round2Service = {
         }
     },
 
-    // Get quiz questions
-    getQuizQuestions: async () => {
+    // Get Round 2 questions from database
+    getRound2Questions: async () => {
         try {
-            const response = await apiService.get('/quiz/questions');
+            const response = await apiService.get('/questions/round2');
             return response.data;
         } catch (error) {
-            console.error('Error fetching quiz questions:', error);
+            console.error('Error fetching Round 2 questions:', error);
+            throw error;
+        }
+    },
+
+    // Get specific aptitude question by step
+    getAptitudeQuestion: async (step) => {
+        try {
+            const response = await apiService.get(`/quiz/apt/${step}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching aptitude question:', error);
+            throw error;
+        }
+    },
+
+    // Get specific coding question by challenge type
+    getCodingQuestion: async (challengeType) => {
+        try {
+            const response = await apiService.get(`/questions/round2/coding/${challengeType}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching coding question:', error);
             throw error;
         }
     },
