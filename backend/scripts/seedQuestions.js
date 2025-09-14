@@ -23,7 +23,7 @@ const connectDB = async () => {
 // Read and parse JSON files
 const readJsonFile = (filePath) => {
     try {
-        const fullPath = path.join(__dirname, '..', '..', '..', 'Hus', filePath);
+        const fullPath = path.join(__dirname, '..', '..', '..', filePath);
         console.log(`Attempting to read file: ${fullPath}`);
 
         if (!fs.existsSync(fullPath)) {
@@ -108,6 +108,7 @@ const seedRound3Questions = async () => {
 const seedQuestions = async () => {
     try {
         console.log('🚀 Starting question seeding process...\n');
+        console.log('MONGODB_URI:', process.env.MONGODB_URI);
 
         await connectDB();
 
