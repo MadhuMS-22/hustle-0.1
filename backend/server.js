@@ -48,7 +48,8 @@ const corsOptions = {
         'http://localhost:5176',
         'http://localhost:3000',
         process.env.FRONTEND_URL,
-        // Add your actual Vercel domain
+        // Add your actual Vercel domains
+        'https://hustle-0-1-o6jnk0fkm-mss-projects-919981bd.vercel.app',
         'https://hustle-0-1-petn7ph6b-mss-projects-919981bd.vercel.app',
         'https://hustle-0-1.vercel.app'
     ].filter(Boolean), // Remove undefined values
