@@ -234,10 +234,10 @@ const Round2Page = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center text-white">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-                    Loading Round 2...
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+                    <div className="text-purple-300 text-xl font-semibold">Loading Round 2...</div>
                 </div>
             </div>
         );
@@ -245,164 +245,169 @@ const Round2Page = () => {
 
 
     return (
-        <div className="flex h-screen">
-            <div className="w-80 bg-slate-800 border-r border-slate-700 p-6 h-screen overflow-hidden">
-                <div className="mb-6">
-                    <h3 className="text-lg font-bold text-purple-300 mb-2">Team: {teamName}</h3>
-                    <div className="text-sm text-slate-400">
-                        Progress: {teamProgress ? Object.values(teamProgress.completedQuestions).filter(Boolean).length : 0}/6 Questions
-                    </div>
-                </div>
-
-                <GlobalTimer startTime={quizStartTime} isActive={!!teamId && !isQuizCompleted} />
-
-                <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">Quiz Questions</h4>
-
-                    {/* Sequential Question Flow */}
-                    {[
-                        { aptitude: 0, challenge: 'debug', challengeName: 'Debug Q1' },
-                        { aptitude: 1, challenge: 'trace', challengeName: 'Output Q2' },
-                        { aptitude: 2, challenge: 'program', challengeName: 'Program Q3' }
-                    ].map((pair, index) => {
-                        const aptitudeKey = `q${pair.aptitude + 1}`;
-                        const challengeKey = `q${pair.aptitude + 4}`;
-
-                        const aptitudeCompleted = teamProgress ? teamProgress.completedQuestions[aptitudeKey] : false;
-                        const challengeCompleted = teamProgress ? teamProgress.completedQuestions[challengeKey] : false;
-
-                        // Sequential unlocking logic
-                        const aptitudeUnlocked = teamProgress ? teamProgress.unlockedQuestions[aptitudeKey] : (pair.aptitude === 0);
-                        const challengeUnlocked = teamProgress ? teamProgress.unlockedQuestions[challengeKey] : false;
-
-                        const isCurrentAptitude = currentQuestion === pair.aptitude && !aptitudeCompleted;
-                        const isCurrentChallenge = currentChallenge === pair.challenge;
-
-                        return (
-                            <div key={pair.aptitude} className="space-y-2">
-                                {/* Aptitude Question */}
-                                <div
-                                    onClick={() => {
-                                        console.log('Sidebar aptitude clicked:', pair.aptitude, 'Completed:', aptitudeCompleted, 'Unlocked:', aptitudeUnlocked);
-                                        if (aptitudeUnlocked && !aptitudeCompleted) {
-                                            handleQuestionClick(pair.aptitude);
-                                        }
-                                    }}
-                                    className={`p-3 rounded-lg border transition-all duration-200 ${isCurrentAptitude
-                                        ? 'border-cyan-400 shadow-lg bg-slate-700 cursor-pointer'
-                                        : aptitudeCompleted
-                                            ? 'border-green-600 bg-green-600/20'
-                                            : aptitudeUnlocked
-                                                ? 'border-slate-600 bg-slate-700 cursor-pointer hover:border-cyan-300'
-                                                : 'border-slate-600 bg-slate-500/30 opacity-50'
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <span className="text-sm font-medium text-slate-200">Q{pair.aptitude + 1}: Aptitude</span>
-                                            {!aptitudeUnlocked && (
-                                                <span className="ml-2 text-xs text-slate-500">🔒 Locked</span>
-                                            )}
-                                            {aptitudeUnlocked && !aptitudeCompleted && (
-                                                <div className="ml-2 flex items-center space-x-1">
-                                                    <span className="text-xs text-cyan-400">Click to solve</span>
-                                                    <span className="text-xs text-yellow-400">
-                                                        ({teamProgress ? 2 - teamProgress.aptitudeAttempts[`q${pair.aptitude + 1}`] : 2}/2 chances)
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {aptitudeCompleted && <span className="text-green-400 text-sm">✓</span>}
-                                    </div>
-                                </div>
-
-                                {/* Connected Challenge */}
-                                <div
-                                    onClick={() => {
-                                        console.log('Sidebar challenge clicked:', pair.challenge, 'Unlocked:', challengeUnlocked, 'Completed:', challengeCompleted);
-                                        if (challengeUnlocked && !challengeCompleted) {
-                                            handleChallengeClick(pair.challenge);
-                                        }
-                                    }}
-                                    className={`p-3 rounded-lg border transition-all duration-200 ml-4 ${isCurrentChallenge
-                                        ? 'border-cyan-400 shadow-lg bg-slate-700'
-                                        : challengeCompleted
-                                            ? 'border-green-600 bg-green-600/20'
-                                            : challengeUnlocked
-                                                ? 'border-slate-600 bg-slate-700 cursor-pointer hover:border-cyan-300'
-                                                : 'border-slate-600 bg-slate-500/30 opacity-50'
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <span className="text-sm font-medium text-slate-200">Q{pair.aptitude + 4}: {pair.challengeName}</span>
-                                            {!challengeUnlocked && (
-                                                <span className="ml-2 text-xs text-slate-500">🔒 Locked</span>
-                                            )}
-                                            {challengeUnlocked && !challengeCompleted && (
-                                                <span className="ml-2 text-xs text-cyan-400">Click to solve</span>
-                                            )}
-                                        </div>
-                                        {challengeCompleted && <span className="text-green-400 text-sm">✓</span>}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
-                {!isQuizStarted ? (
-                    <ChallengeSelection onStart={handleStartRound2} teamProgress={teamProgress} />
-                ) : currentChallenge ? (
-                    currentChallenge === 'debug' ? (
-                        <Debug onSubmit={handleCodeSubmit} teamId={teamId} />
-                    ) : currentChallenge === 'trace' ? (
-                        <Trace onSubmit={handleCodeSubmit} teamId={teamId} />
-                    ) : currentChallenge === 'program' ? (
-                        <Program onSubmit={handleCodeSubmit} teamId={teamId} />
-                    ) : null
-                ) : isQuizCompleted ? (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 p-4">
-                        <div className="text-center">
-                            <div className="text-8xl mb-6">🎉</div>
-                            <h2 className="text-5xl text-purple-300 font-bold mb-4 bg-gradient-to-r from-purple-300 to-blue-300 bg-clip-text text-transparent">
-                                Round 2 Completed!
-                            </h2>
-                            <p className="text-xl text-slate-300 mb-8">
-                                Congratulations! You have successfully completed all challenges.
-                            </p>
-                            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 max-w-md mx-auto shadow-2xl">
-                                <p className="text-slate-300 text-lg mb-4">
-                                    Thank you for participating in Round 2!
-                                </p>
-                                <div className="text-cyan-400 font-semibold mb-4">
-                                    All challenges completed successfully!
-                                </div>
-                                <div className="text-slate-400 text-sm mb-6">
-                                    Your responses have been submitted and recorded. You will be redirected to the team page shortly.
-                                </div>
-                                <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 mb-6">
-                                    <div className="text-yellow-300 font-semibold mb-2">📋 Next Steps:</div>
-                                    <div className="text-yellow-200 text-sm">
-                                        • Return to team page to see your progress<br />
-                                        • Wait for admin to announce Round 2 results<br />
-                                        • If qualified, Round 3 will be unlocked
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => navigate('/team')}
-                                    className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-all transform hover:scale-105"
-                                >
-                                    Back to Team Page
-                                </button>
-                            </div>
+        <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 font-sans antialiased text-white min-h-screen relative overflow-hidden">
+            <div className="flex h-screen">
+                <div className="w-80 glass-dark border-r border-purple-500/20 p-6 h-screen overflow-hidden">
+                    <div className="mb-6">
+                        <h3 className="text-lg font-bold text-purple-300 mb-2">Team: {teamName}</h3>
+                        <div className="text-sm text-gray-300">
+                            Progress: {teamProgress ? Object.values(teamProgress.completedQuestions).filter(Boolean).length : 0}/6 Questions
                         </div>
                     </div>
-                ) : (
-                    <Aptitude questionStep={currentQuestion} onSubmit={handleAptSubmit} teamProgress={teamProgress} />
-                )}
+
+                    <GlobalTimer startTime={quizStartTime} isActive={!!teamId && !isQuizCompleted} />
+
+                    <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">Quiz Questions</h4>
+
+                        {/* Sequential Question Flow */}
+                        {[
+                            { aptitude: 0, challenge: 'debug', challengeName: 'Debug Q1' },
+                            { aptitude: 1, challenge: 'trace', challengeName: 'Output Q2' },
+                            { aptitude: 2, challenge: 'program', challengeName: 'Program Q3' }
+                        ].map((pair, index) => {
+                            const aptitudeKey = `q${pair.aptitude + 1}`;
+                            const challengeKey = `q${pair.aptitude + 4}`;
+
+                            const aptitudeCompleted = teamProgress ? teamProgress.completedQuestions[aptitudeKey] : false;
+                            const challengeCompleted = teamProgress ? teamProgress.completedQuestions[challengeKey] : false;
+
+                            // Sequential unlocking logic
+                            const aptitudeUnlocked = teamProgress ? teamProgress.unlockedQuestions[aptitudeKey] : (pair.aptitude === 0);
+                            const challengeUnlocked = teamProgress ? teamProgress.unlockedQuestions[challengeKey] : false;
+
+                            const isCurrentAptitude = currentQuestion === pair.aptitude && !aptitudeCompleted;
+                            const isCurrentChallenge = currentChallenge === pair.challenge;
+
+                            return (
+                                <div key={pair.aptitude} className="space-y-2">
+                                    {/* Aptitude Question */}
+                                    <div
+                                        onClick={() => {
+                                            console.log('Sidebar aptitude clicked:', pair.aptitude, 'Completed:', aptitudeCompleted, 'Unlocked:', aptitudeUnlocked);
+                                            if (aptitudeUnlocked && !aptitudeCompleted) {
+                                                handleQuestionClick(pair.aptitude);
+                                            }
+                                        }}
+                                        className={`p-3 rounded-xl border transition-all duration-500 transform hover:scale-105 ${isCurrentAptitude
+                                            ? 'border-purple-400 shadow-2xl bg-purple-500/20 cursor-pointer glow-purple'
+                                            : aptitudeCompleted
+                                                ? 'border-green-500 bg-green-500/20'
+                                                : aptitudeUnlocked
+                                                    ? 'border-purple-500/30 bg-purple-500/10 cursor-pointer hover:border-purple-400 hover:bg-purple-500/20'
+                                                    : 'border-gray-600 bg-gray-500/20 opacity-50'
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <span className="text-sm font-medium text-slate-200">Q{pair.aptitude + 1}: Aptitude</span>
+                                                {!aptitudeUnlocked && (
+                                                    <span className="ml-2 text-xs text-slate-500">🔒 Locked</span>
+                                                )}
+                                                {aptitudeUnlocked && !aptitudeCompleted && (
+                                                    <div className="ml-2 flex items-center space-x-1">
+                                                        <span className="text-xs text-cyan-400">Click to solve</span>
+                                                        <span className="text-xs text-yellow-400">
+                                                            ({teamProgress ? 2 - teamProgress.aptitudeAttempts[`q${pair.aptitude + 1}`] : 2}/2 chances)
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {aptitudeCompleted && <span className="text-green-400 text-sm">✓</span>}
+                                        </div>
+                                    </div>
+
+                                    {/* Connected Challenge */}
+                                    <div
+                                        onClick={() => {
+                                            console.log('Sidebar challenge clicked:', pair.challenge, 'Unlocked:', challengeUnlocked, 'Completed:', challengeCompleted);
+                                            if (challengeUnlocked && !challengeCompleted) {
+                                                handleChallengeClick(pair.challenge);
+                                            }
+                                        }}
+                                        className={`p-3 rounded-xl border transition-all duration-500 transform hover:scale-105 ml-4 ${isCurrentChallenge
+                                            ? 'border-purple-400 shadow-2xl bg-purple-500/20 glow-purple'
+                                            : challengeCompleted
+                                                ? 'border-green-500 bg-green-500/20'
+                                                : challengeUnlocked
+                                                    ? 'border-purple-500/30 bg-purple-500/10 cursor-pointer hover:border-purple-400 hover:bg-purple-500/20'
+                                                    : 'border-gray-600 bg-gray-500/20 opacity-50'
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <span className="text-sm font-medium text-slate-200">Q{pair.aptitude + 4}: {pair.challengeName}</span>
+                                                {!challengeUnlocked && (
+                                                    <span className="ml-2 text-xs text-slate-500">🔒 Locked</span>
+                                                )}
+                                                {challengeUnlocked && !challengeCompleted && (
+                                                    <span className="ml-2 text-xs text-cyan-400">Click to solve</span>
+                                                )}
+                                            </div>
+                                            {challengeCompleted && <span className="text-green-400 text-sm">✓</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                    {!isQuizStarted ? (
+                        <ChallengeSelection onStart={handleStartRound2} teamProgress={teamProgress} />
+                    ) : currentChallenge ? (
+                        currentChallenge === 'debug' ? (
+                            <Debug onSubmit={handleCodeSubmit} teamId={teamId} />
+                        ) : currentChallenge === 'trace' ? (
+                            <Trace onSubmit={handleCodeSubmit} teamId={teamId} />
+                        ) : currentChallenge === 'program' ? (
+                            <Program onSubmit={handleCodeSubmit} teamId={teamId} />
+                        ) : null
+                    ) : isQuizCompleted ? (
+                        <div className="min-h-screen flex items-center justify-center p-4">
+                            <div className="text-center">
+                                <div className="text-8xl mb-6">🎉</div>
+                                <h2 className="text-5xl text-purple-300 font-bold mb-4 bg-gradient-to-r from-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
+                                    Round 2 Completed!
+                                </h2>
+                                <p className="text-xl text-gray-300 mb-8">
+                                    Congratulations! You have successfully completed all challenges.
+                                </p>
+                                <div className="glass-dark rounded-3xl p-8 max-w-md mx-auto shadow-2xl">
+                                    <p className="text-gray-300 text-lg mb-4">
+                                        Thank you for participating in Round 2!
+                                    </p>
+                                    <div className="text-purple-300 font-semibold mb-4">
+                                        All challenges completed successfully!
+                                    </div>
+                                    <div className="text-gray-400 text-sm mb-6">
+                                        Your responses have been submitted and recorded. You will be redirected to the team page shortly.
+                                    </div>
+                                    <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-xl p-4 mb-6">
+                                        <div className="text-yellow-300 font-semibold mb-2">📋 Next Steps:</div>
+                                        <div className="text-yellow-200 text-sm">
+                                            • Return to team page to see your progress<br />
+                                            • Wait for admin to announce Round 2 results<br />
+                                            • If qualified, Round 3 will be unlocked
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate('/team')}
+                                        className="group flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 text-white text-lg font-bold rounded-2xl shadow-2xl hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 transition-all duration-500 transform hover:scale-110 glow-purple"
+                                    >
+                                        Back to Team Page
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <Aptitude questionStep={currentQuestion} onSubmit={handleAptSubmit} teamProgress={teamProgress} />
+                    )}
+                </div>
             </div>
         </div>
     );

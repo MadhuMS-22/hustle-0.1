@@ -36,12 +36,12 @@ const GlobalTimer = ({ startTime, isActive }) => {
     if (!startTime) return null;
 
     return (
-        <div className="bg-slate-700 rounded-lg p-3 mb-4 border border-slate-600">
+        <div className="glass rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-300">
+                <span className="text-sm font-semibold text-purple-300">
                     {isActive ? 'Quiz Time:' : 'Final Time:'}
                 </span>
-                <span className={`text-lg font-mono font-bold ${isActive ? 'text-cyan-400' : 'text-green-400'}`}>
+                <span className={`text-xl font-mono font-bold ${isActive ? 'text-purple-300' : 'text-green-400'}`}>
                     {formatTime(elapsedTime)}
                 </span>
             </div>

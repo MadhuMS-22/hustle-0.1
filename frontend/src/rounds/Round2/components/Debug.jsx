@@ -114,44 +114,45 @@ int main() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
+        <div className="min-h-screen p-4">
             <div className="max-w-7xl mx-auto">
-                <div className="bg-slate-800 rounded-2xl shadow-2xl p-6 mb-6 border border-slate-700">
-                    <div className="flex justify-between items-center mb-6">
+                <div className="glass-dark rounded-2xl shadow-2xl p-4 mb-4">
+                    <div className="flex justify-between items-center mb-3">
                         <div>
-                            <h2 className="text-3xl font-bold text-cyan-400 mb-2">Debug The Program</h2>
-                            <div className="w-16 h-1 bg-cyan-400 rounded-full"></div>
+                            <h2 className="text-2xl font-bold text-white bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent">
+                                Debug The Program
+                            </h2>
                         </div>
                         <div className="text-right">
-                            <div className={`text-4xl font-mono font-bold ${timeLeft < 60 ? 'text-red-400 animate-pulse' : 'text-cyan-400'
+                            <div className={`text-lg font-mono font-bold ${timeLeft < 60 ? 'text-red-400 animate-pulse' : 'text-purple-300'
                                 }`}>
-                                Time Left: {formatTime(timeLeft)}
+                                Time: {formatTime(timeLeft)}
                             </div>
                             {!isRunning && timeLeft === 300 && (
-                                <div className="mt-3 text-green-400 text-sm">
+                                <div className="mt-1 text-green-400 text-xs">
                                     Timer starting automatically...
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="bg-slate-700 rounded-xl p-6 border border-slate-600">
-                        <h3 className="text-xl font-bold text-slate-200 mb-3">Instructions:</h3>
-                        <p className="text-slate-300 leading-relaxed">
+                    <div className="glass rounded-xl p-3">
+                        <h3 className="text-base font-bold text-white mb-2">Instructions:</h3>
+                        <p className="text-gray-300 text-base leading-relaxed">
                             Find and fix the bug in the following C code. The program should calculate the sum of array elements correctly.
                             Look for the off-by-one error in the loop condition.
                         </p>
                     </div>
                 </div>
 
-                <div className="bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
-                    <h3 className="text-2xl font-bold text-slate-200 mb-4 flex items-center">
-                        <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold mr-3">DEBUG</span>
+                <div className="glass-dark rounded-2xl shadow-2xl p-4">
+                    <h3 className="text-lg font-bold text-white mb-3 flex items-center">
+                        <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 py-1 rounded-lg text-xs font-semibold mr-2">DEBUG</span>
                         Fix the Code Below
                     </h3>
 
-                    <div className="mb-4 p-4 bg-slate-700 rounded-lg border border-slate-600">
-                        <p className="text-slate-300 text-sm">
+                    <div className="mb-3 p-3 glass rounded-xl">
+                        <p className="text-gray-300 text-sm">
                             Find and fix the bug in the code below.
                         </p>
                     </div>
@@ -160,26 +161,34 @@ int main() {
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
                         placeholder="Fix the code here..."
-                        className="w-full h-80 p-4 bg-slate-900 border border-slate-600 rounded-xl font-mono text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-200"
+                        className="w-full h-80 p-4 bg-gray-900/50 border border-purple-500/30 rounded-xl font-mono text-sm text-gray-200 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all duration-500 backdrop-blur-sm"
                     />
 
-                    <div className="mt-6 flex gap-4">
+                    <div className="mt-4 flex gap-3">
                         <button
                             onClick={handleSubmit}
                             disabled={!code.trim() || timeLeft === 0 || submitting}
-                            className={`flex-1 py-3 px-6 rounded-xl font-bold transition-all duration-200 transform hover:scale-105 ${code.trim() && timeLeft > 0 && !submitting
-                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl'
-                                : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                            className={`group flex-1 py-2 px-4 rounded-xl font-bold text-sm transition-all duration-500 transform hover:scale-110 ${code.trim() && timeLeft > 0 && !submitting
+                                ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white shadow-2xl glow-purple'
+                                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                 }`}
                         >
                             {submitting ? 'Submitting...' : 'Submit Solution'}
+                            {code.trim() && timeLeft > 0 && !submitting && (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform duration-300 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            )}
                         </button>
 
                         <button
                             onClick={() => setCode(codeToDebug)}
-                            className="px-6 py-3 bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white rounded-xl font-semibold transition-all duration-500 shadow-xl glow-purple"
+                            className="group px-4 py-2 bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white rounded-xl font-bold text-sm transition-all duration-500 transform hover:scale-110 shadow-2xl glow-purple"
                         >
                             Reset Code
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 group-hover:rotate-180 transition-transform duration-300 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
                         </button>
                     </div>
                 </div>
