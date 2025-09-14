@@ -3,7 +3,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CodeVerification from '../components/CodeVerification'
-import Navbar from '../components/Navbar'
+import TeamNavbar from '../components/TeamNavbar'
 import Footer from '../components/Footer'
 import apiService from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
@@ -310,7 +310,7 @@ const TeamPage = () => {
 
   return (
     <div className='bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 font-sans antialiased min-h-screen relative overflow-hidden'>
-      <Navbar />
+      <TeamNavbar />
 
       <main className="pt-20 min-h-screen">
         {/* Team Header Section */}
@@ -344,9 +344,11 @@ const TeamPage = () => {
               })}>
                 <div className='flex flex-col items-center gap-4'>
                   <div className="p-6 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white backdrop-blur-md glow-purple">
-                    <span className="text-3xl font-bold text-white">2</span>
+                    <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8,3A2,2 0 0,0 6,5V9A2,2 0 0,1 4,11H3V13H4A2,2 0 0,1 6,15V19A2,2 0 0,0 8,21H10V19H8V14A2,2 0 0,0 6,12A2,2 0 0,0 8,10V5H10V3M16,3A2,2 0 0,1 18,5V9A2,2 0 0,0 20,11H21V13H20A2,2 0 0,0 18,15V19A2,2 0 0,1 16,21H14V19H16V14A2,2 0 0,1 18,12A2,2 0 0,1 16,10V5H14V3H16Z" />
+                    </svg>
                   </div>
-                  <h3 className='text-2xl font-bold text-white'>Round 2: Coding</h3>
+                  <h3 className='text-2xl font-bold text-white'>Round 2: Column Clash - Code to win</h3>
                   <p className='text-sm font-medium text-gray-300 text-center leading-relaxed'>
                     {getRoundMessage(rounds.round2, 2)}
                   </p>
@@ -400,9 +402,11 @@ const TeamPage = () => {
               })}>
                 <div className='flex flex-col items-center gap-4'>
                   <div className="p-6 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white backdrop-blur-md glow-purple">
-                    <span className="text-3xl font-bold text-white">3</span>
+                    <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z" />
+                    </svg>
                   </div>
-                  <h3 className='text-2xl font-bold text-white'>Round 3: Final</h3>
+                  <h3 className='text-2xl font-bold text-white'>Round 3: C-Matrix Code Rush</h3>
                   <p className='text-sm font-medium text-gray-300 text-center leading-relaxed'>
                     {getRoundMessage(rounds.round3, 3)}
                   </p>

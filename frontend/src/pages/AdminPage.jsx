@@ -874,12 +874,12 @@ const AdminPage = () => {
                                     placeholder="Enter new round 2 code"
                                     value={newRoundCodes.round2 || ''}
                                     onChange={(e) => setNewRoundCodes({ ...newRoundCodes, round2: e.target.value })}
-                                    className="flex-1 px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 />
                                 <button
                                     onClick={() => handleSetCode(2)}
                                     disabled={settingCode.round2 || !newRoundCodes.round2.trim()}
-                                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-colors"
+                                    className="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg"
                                 >
                                     {settingCode.round2 ? 'Setting...' : 'Set'}
                                 </button>
@@ -889,7 +889,7 @@ const AdminPage = () => {
                         <button
                             onClick={handleStartRound2}
                             disabled={!roundCodes.round2}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg"
+                            className="w-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg glow-purple"
                         >
                             Start Round 2
                         </button>
@@ -934,7 +934,7 @@ const AdminPage = () => {
                                 <button
                                     onClick={() => handleSetCode(3)}
                                     disabled={settingCode.round3 || !newRoundCodes.round3.trim()}
-                                    className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-colors"
+                                    className="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg"
                                 >
                                     {settingCode.round3 ? 'Setting...' : 'Set'}
                                 </button>
@@ -944,7 +944,7 @@ const AdminPage = () => {
                         <button
                             onClick={handleStartRound3}
                             disabled={!roundCodes.round3}
-                            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg"
+                            className="w-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg glow-purple"
                         >
                             Start Round 3
                         </button>
@@ -998,7 +998,7 @@ const AdminPage = () => {
                             placeholder="Search by team name or member name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                     </div>
                     <div>
@@ -1006,7 +1006,7 @@ const AdminPage = () => {
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                         >
                             <option value="all">All Teams</option>
                             <option value="Selected">Selected</option>
@@ -1031,7 +1031,7 @@ const AdminPage = () => {
                     <div className="flex gap-2">
                         <button
                             onClick={handleSelectAll}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg text-sm"
                         >
                             Select All
                         </button>
@@ -1113,7 +1113,7 @@ const AdminPage = () => {
                                                     type="checkbox"
                                                     checked={selectedTeams.includes(team._id)}
                                                     onChange={() => handleTeamSelection(team._id)}
-                                                    className="w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                                                    className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                                                 />
                                                 <span className="ml-2 text-sm text-gray-300">Select</span>
                                             </div>
@@ -1146,7 +1146,7 @@ const AdminPage = () => {
                     <button
                         onClick={handleRefreshData}
                         disabled={selectionLoading}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                        className="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 transform shadow-lg font-medium glow-purple"
                     >
                         {selectionLoading ? 'Refreshing...' : '🔄 Refresh Data'}
                     </button>
@@ -1359,7 +1359,7 @@ const AdminPage = () => {
                         <div className="flex justify-center gap-4">
                             <button
                                 onClick={handleBackToList}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105"
+                                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105 shadow-lg glow-purple"
                             >
                                 Back to Teams
                             </button>
@@ -1450,7 +1450,7 @@ const AdminPage = () => {
                                         {/* Middle Area: Order ID and Question Scores */}
                                         <div className="flex-1 px-4">
                                             <div className="flex items-center gap-3">
-                                                <button className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold">
+                                                <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-300 hover:scale-105 transform shadow-lg">
                                                     Order ID: {team.round3QuestionOrderName?.replace('Order ', '') || 'Unknown'}
                                                 </button>
                                                 <div className="flex gap-1.5">
@@ -1499,7 +1499,7 @@ const AdminPage = () => {
                                                     onClick={() => handleViewPrograms(team)}
                                                     disabled={!team.round3Completed}
                                                     className={`font-semibold py-1.5 px-3 rounded-md text-sm transition duration-200 ${team.round3Completed
-                                                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                                        ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white'
                                                         : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                                         }`}
                                                 >
@@ -1544,7 +1544,7 @@ const AdminPage = () => {
 
     if (loading || !isAuthenticated) {
         return (
-            <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen flex items-center justify-center">
+            <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
                     <p className="text-white text-lg">
@@ -1556,7 +1556,7 @@ const AdminPage = () => {
     }
 
     return (
-        <div className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen flex">
+        <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 min-h-screen flex">
             {/* Sidebar */}
             <div className="w-64 bg-white/20 backdrop-blur-sm border-r border-white/30 shadow-lg">
                 <div className="p-6">

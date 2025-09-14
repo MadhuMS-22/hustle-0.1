@@ -92,9 +92,7 @@ const TeamPage = () => {
         <div className='text-center py-12 px-4'>
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-center mb-6">
-              <div className="p-4 rounded-2xl bg-white bg-opacity-10 text-purple-300 shadow-xl backdrop-blur-md border border-white border-opacity-20">
-                <img src="https://placehold.co/64x64/E9D5FF/6D28D9?text=Team" alt="Team Icon" className="h-16 w-16" />
-              </div>
+              <img src="/h-logo.png" alt="Team Icon" className="h-24 w-24" />
             </div>
             <h1 className='text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent'>
               Welcome, {teamName}!
@@ -160,7 +158,7 @@ const TeamPage = () => {
                   <div className="p-4 rounded-full bg-white/10 backdrop-blur-md">
                     <span className="text-2xl font-bold text-white">1</span>
                   </div>
-                  <h3 className='text-2xl font-bold text-white'>Round 1: Aptitude</h3>
+                  <h3 className='text-2xl font-bold text-white'>Round 1: CODE SPARK</h3>
                   <p className='text-sm font-medium text-gray-300 text-center leading-relaxed'>
                     {getRoundMessage(rounds.round1, 1)}
                   </p>

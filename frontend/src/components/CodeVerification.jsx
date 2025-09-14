@@ -25,14 +25,14 @@ const CodeVerification = ({ onCodeVerified, onCancel, roundNumber }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div className="glass-dark rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 border border-purple-400/30">
                 <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 glow-purple">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Round {roundNumber} Access Code</h2>
+                    <h2 className="text-2xl font-bold text-white mb-2 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent">Round {roundNumber} Access Code</h2>
                     <p className="text-gray-300">
                         Enter the access code to start Round {roundNumber}
                     </p>
@@ -48,7 +48,7 @@ const CodeVerification = ({ onCodeVerified, onCancel, roundNumber }) => {
                             id="code"
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full px-4 py-3 glass border border-purple-400/30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 backdrop-blur-md"
                             placeholder="Enter access code"
                             required
                             autoComplete="off"
@@ -57,7 +57,7 @@ const CodeVerification = ({ onCodeVerified, onCancel, roundNumber }) => {
                     </div>
 
                     {error && (
-                        <div className="bg-red-900/30 border border-red-600 rounded-lg p-3">
+                        <div className="bg-red-500/20 border border-red-400/30 rounded-lg p-3 backdrop-blur-md">
                             <p className="text-red-300 text-sm">{error}</p>
                         </div>
                     )}
@@ -66,14 +66,14 @@ const CodeVerification = ({ onCodeVerified, onCancel, roundNumber }) => {
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50"
+                            className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:opacity-50 backdrop-blur-md border border-white/20 hover:border-white/30"
                             disabled={isVerifying}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:opacity-50 flex items-center justify-center"
+                            className="flex-1 bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:opacity-50 flex items-center justify-center hover:scale-105 transform shadow-lg glow-purple"
                             disabled={isVerifying || !code.trim()}
                         >
                             {isVerifying ? (

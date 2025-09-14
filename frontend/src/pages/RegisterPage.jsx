@@ -348,15 +348,15 @@ const RegisterPage = () => {
                 </div>
 
                 {/* Leader Selection */}
-                <div className="bg-white bg-opacity-5 rounded-2xl p-6 border border-white border-opacity-10">
-                  <label className="block text-white text-xl font-bold mb-6">
+                <div className="bg-white bg-opacity-5 rounded-lg p-4 border border-white border-opacity-10">
+                  <label className="block text-white text-base font-semibold mb-4">
                     <div className="flex items-center">
-                      {renderIcon("M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8 14s1.5 2 4 2 4-2 4-2M15 9h.01M9 9h.01", "w-6 h-6 mr-3")}
+                      {renderIcon("M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM8 14s1.5 2 4 2 4-2 4-2M15 9h.01M9 9h.01", "w-5 h-5 mr-2")}
                       Choose Team Leader
                     </div>
                   </label>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <label className={`flex items-center p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${formData.leader === 'member1'
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <label className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-300 border-2 ${formData.leader === 'member1'
                       ? 'bg-purple-500 bg-opacity-20 border-purple-400 shadow-lg'
                       : 'bg-white bg-opacity-5 border-white border-opacity-20 hover:bg-opacity-10'
                       }`}>
@@ -366,25 +366,25 @@ const RegisterPage = () => {
                         value="member1"
                         checked={formData.leader === 'member1'}
                         onChange={handleInputChange}
-                        className="mr-4 w-5 h-5 text-purple-500 focus:ring-purple-400"
+                        className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-400"
                       />
                       <div className="flex-1">
-                        <div className="text-white font-semibold text-lg">
+                        <div className="text-white font-semibold text-base">
                           {formData.member1Name || 'Member 1'}
                         </div>
-                        <div className="text-gray-300 text-base">
+                        <div className="text-gray-300 text-sm">
                           {formData.member1Email || 'member1@example.com'}
                         </div>
                       </div>
                       {formData.leader === 'member1' && (
-                        <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       )}
                     </label>
-                    <label className={`flex items-center p-6 rounded-2xl cursor-pointer transition-all duration-300 border-2 ${formData.leader === 'member2'
+                    <label className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-300 border-2 ${formData.leader === 'member2'
                       ? 'bg-purple-500 bg-opacity-20 border-purple-400 shadow-lg'
                       : 'bg-white bg-opacity-5 border-white border-opacity-20 hover:bg-opacity-10'
                       }`}>
@@ -394,19 +394,19 @@ const RegisterPage = () => {
                         value="member2"
                         checked={formData.leader === 'member2'}
                         onChange={handleInputChange}
-                        className="mr-4 w-5 h-5 text-purple-500 focus:ring-purple-400"
+                        className="mr-3 w-4 h-4 text-purple-500 focus:ring-purple-400"
                       />
                       <div className="flex-1">
-                        <div className="text-white font-semibold text-lg">
+                        <div className="text-white font-semibold text-base">
                           {formData.member2Name || 'Member 2'}
                         </div>
-                        <div className="text-gray-300 text-base">
+                        <div className="text-gray-300 text-sm">
                           {formData.member2Email || 'member2@example.com'}
                         </div>
                       </div>
                       {formData.leader === 'member2' && (
-                        <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -429,7 +429,7 @@ const RegisterPage = () => {
                     value={formData.leaderPhone}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 glass border border-purple-400/30 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 backdrop-blur-md text-lg"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder="+91 0123456789"
                   />
                   {errors.leaderPhone && <p className="text-red-400 text-sm mt-2 flex items-center">
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
