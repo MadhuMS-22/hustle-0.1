@@ -48,9 +48,9 @@ const corsOptions = {
         'http://localhost:5176',
         'http://localhost:3000',
         process.env.FRONTEND_URL,
-        // Add your Vercel domain here after deployment
-        'https://hustle-competition.vercel.app',
-        'https://hustle-competition-git-main.vercel.app'
+        // Add your actual Vercel domain
+        'https://hustle-0-1-petn7ph6b-mss-projects-919981bd.vercel.app',
+        'https://hustle-0-1.vercel.app'
     ].filter(Boolean), // Remove undefined values
     credentials: true,
     optionsSuccessStatus: 200
@@ -60,6 +60,23 @@ app.use(cors(corsOptions));
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Root route handler
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Hustle Competition Backend API',
+        version: '1.0.0',
+        endpoints: {
+            health: '/api/health',
+            auth: '/api/auth',
+            competition: '/api/competition',
+            quiz: '/api/quiz',
+            questions: '/api/questions',
+            admin: '/api/admin'
+        }
+    });
+});
 
 // API routes
 app.use('/api/auth', authRoutes);
