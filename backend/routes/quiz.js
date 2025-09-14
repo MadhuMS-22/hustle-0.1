@@ -1,38 +1,33 @@
 import express from 'express';
 import Team from '../models/Team.js';
 import Submission from '../models/Submission.js';
+import Round2Question from '../models/Round2Question.js';
 
 const router = express.Router();
 
-// Aptitude questions data
-const aptitudeQuestions = {
-    0: {
-        question: "What is the time complexity of binary search?",
-        options: ["O(n)", "O(log n)", "O(n²)", "O(1)"],
-        correct: 1
-    },
-    1: {
-        question: "Which data structure uses LIFO principle?",
-        options: ["Queue", "Stack", "Array", "Linked List"],
-        correct: 1
-    },
-    2: {
-        question: "What does 'git commit' do?",
-        options: ["Stages changes", "Saves changes to repository", "Creates a new branch", "Merges branches"],
-        correct: 1
-    }
-};
-
 // Get aptitude question
-router.get('/apt/:step', (req, res) => {
-    const step = parseInt(req.params.step);
-    const question = aptitudeQuestions[step];
+router.get('/apt/:step', async (req, res) => {
+    try {
+        const step = parseInt(req.params.step);
 
-    if (!question) {
-        return res.status(404).json({ error: 'Question not found' });
+        const questions = await Round2Question.findOne({ round: 'Round2' });
+        if (!questions) {
+            return res.status(404).json({ error: 'Questions not found' });
+        }
+
+        if (step < 0 || step >= questions.aptitude.length) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+
+        const question = questions.aptitude[step];
+        res.json({
+            question: question.question,
+            options: question.options,
+            correct: question.correctAnswerIndex
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    res.json(question);
 });
 
 // Submit aptitude answer
@@ -45,10 +40,16 @@ router.post('/apt/answer', async (req, res) => {
             return res.status(404).json({ error: 'Team not found' });
         }
 
-        const question = aptitudeQuestions[step];
-        if (!question) {
+        const questions = await Round2Question.findOne({ round: 'Round2' });
+        if (!questions) {
+            return res.status(404).json({ error: 'Questions not found' });
+        }
+
+        if (step < 0 || step >= questions.aptitude.length) {
             return res.status(404).json({ error: 'Question not found' });
         }
+
+        const question = questions.aptitude[step];
 
         const questionKey = `q${step + 1}`;
         const attemptKey = `q${step + 1}`;
@@ -63,7 +64,7 @@ router.post('/apt/answer', async (req, res) => {
             return res.status(400).json({ error: 'Maximum attempts reached for this question' });
         }
 
-        const correct = selected === question.correct;
+        const correct = selected === question.correctAnswerIndex;
 
         // Set start time on first quiz
         if (step === 0 && !team.startTime) {
@@ -170,39 +171,18 @@ router.post('/code/submit', async (req, res) => {
         const maxTime = 300; // 5 minutes in seconds
         const actualTimeTaken = Math.min(timeTaken, maxTime);
 
-        // Define original questions for each challenge type
-        const originalQuestions = {
-            'debug': `#include <stdio.h>
+        // Get original questions from database
+        const questions = await Round2Question.findOne({ round: 'Round2' });
+        if (!questions) {
+            return res.status(404).json({ error: 'Questions not found' });
+        }
 
-int main() {
-    int arr[] = {1, 2, 3, 4, 5};
-    int sum = 0;
-    
-    for (int i = 0; i <= 5; i++) {
-        sum += arr[i];
-    }
-    
-    printf("Sum: %d\\n", sum);
-    return 0;
-}`,
-            'trace': `#include <stdio.h>
+        const codingQuestion = questions.coding.find(q => q.challengeType === challengeType);
+        if (!codingQuestion) {
+            return res.status(404).json({ error: 'Coding question not found' });
+        }
 
-int mystery(int n) {
-    if (n <= 1) return n;
-    return mystery(n-1) + mystery(n-2);
-}
-
-int main() {
-    int result = mystery(4);
-    printf("Result: %d\\n", result);
-    return 0;
-}`,
-            'program': `Write a C program to print the first n Fibonacci numbers.
-
-Example:
-Input: 5
-Output: 0 1 1 2 3`
-        };
+        const originalQuestion = codingQuestion.problemStatement + '\n\n' + codingQuestion.code;
 
         // Calculate score based on code quality and time taken
         let score = 0;
@@ -243,7 +223,7 @@ Output: 0 1 1 2 3`
             questionType: challengeType,
             step: step,
             challengeType: challengeType,
-            originalQuestion: originalQuestions[challengeType],
+            originalQuestion: originalQuestion,
             userSolution: code,
             timeTaken: actualTimeTaken,
             attemptNumber: 1,
@@ -290,39 +270,18 @@ router.post('/code/autosave', async (req, res) => {
             return res.status(400).json({ error: 'Question is locked' });
         }
 
-        // Define original questions for each challenge type
-        const originalQuestions = {
-            'debug': `#include <stdio.h>
+        // Get original questions from database
+        const questions = await Round2Question.findOne({ round: 'Round2' });
+        if (!questions) {
+            return res.status(404).json({ error: 'Questions not found' });
+        }
 
-int main() {
-    int arr[] = {1, 2, 3, 4, 5};
-    int sum = 0;
-    
-    for (int i = 0; i <= 5; i++) {
-        sum += arr[i];
-    }
-    
-    printf("Sum: %d\\n", sum);
-    return 0;
-}`,
-            'trace': `#include <stdio.h>
+        const codingQuestion = questions.coding.find(q => q.challengeType === challengeType);
+        if (!codingQuestion) {
+            return res.status(404).json({ error: 'Coding question not found' });
+        }
 
-int mystery(int n) {
-    if (n <= 1) return n;
-    return mystery(n-1) + mystery(n-2);
-}
-
-int main() {
-    int result = mystery(4);
-    printf("Result: %d\\n", result);
-    return 0;
-}`,
-            'program': `Write a C program to print the first n Fibonacci numbers.
-
-Example:
-Input: 5
-Output: 0 1 1 2 3`
-        };
+        const originalQuestion = codingQuestion.problemStatement + '\n\n' + codingQuestion.code;
 
         // Save auto-save submission
         const submission = new Submission({
@@ -331,7 +290,7 @@ Output: 0 1 1 2 3`
             questionType: challengeType,
             step: step,
             challengeType: challengeType,
-            originalQuestion: originalQuestions[challengeType],
+            originalQuestion: originalQuestion,
             userSolution: code,
             timeTaken: timeTaken,
             attemptNumber: 1,

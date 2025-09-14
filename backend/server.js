@@ -18,6 +18,7 @@ import round3Routes from './routes/round3.js';
 import adminRoutes from './routes/admin.js';
 import adminAuthRoutes from './routes/adminAuth.js';
 import quizRoutes from './routes/quiz.js';
+import questionsRoutes from './routes/questions.js';
 
 // Connect to database
 connectDB();
@@ -72,6 +73,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/competition', competitionRoutes);
 app.use('/api/round3', round3Routes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/questions', questionsRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/admin', adminRoutes);
 
