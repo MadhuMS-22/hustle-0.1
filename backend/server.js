@@ -47,7 +47,10 @@ const corsOptions = {
         'http://localhost:5175',
         'http://localhost:5176',
         'http://localhost:3000',
-        process.env.FRONTEND_URL
+        process.env.FRONTEND_URL,
+        // Add your Vercel domain here after deployment
+        'https://hustle-competition.vercel.app',
+        'https://hustle-competition-git-main.vercel.app'
     ].filter(Boolean), // Remove undefined values
     credentials: true,
     optionsSuccessStatus: 200
