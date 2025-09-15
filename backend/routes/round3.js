@@ -1,9 +1,12 @@
 // backend/routes/round3.js
 import express from 'express';
-import { submitRound3, getRound3Scores, getAllRound3Results, updateRound3Score, getTeamRound3Progress } from '../controllers/round3Controller.js';
+import { submitRound3, getRound3Scores, getAllRound3Results, updateRound3Score, getTeamRound3Progress, getRound3Questions } from '../controllers/round3Controller.js';
 import { protect, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Get Round 3 questions
+router.get("/questions", getRound3Questions);
 
 // Auth required for submitting scores
 router.post("/submit", protect, submitRound3);

@@ -92,7 +92,7 @@ const Round2Page = () => {
 
                     // Restore completed challenges
                     const completedChallenges = [];
-                    const challengeMap = { 'q4': 'debug', 'q5': 'trace', 'q6': 'program' };
+                    const challengeMap = { 'q2': 'debug', 'q4': 'trace', 'q6': 'program' };
                     Object.keys(challengeMap).forEach(qKey => {
                         if (team.completedQuestions[qKey]) {
                             completedChallenges.push(challengeMap[qKey]);
@@ -100,36 +100,24 @@ const Round2Page = () => {
                     });
                     setCompletedChallenges(completedChallenges);
 
-                    // Set current question to first incomplete aptitude question
-                    let firstIncompleteAptitude = -1;
-                    for (let i = 0; i < 3; i++) {
-                        const questionKey = `q${i + 1}`;
-                        if (team.unlockedQuestions[questionKey] && !team.completedQuestions[questionKey]) {
-                            firstIncompleteAptitude = i;
-                            break;
-                        }
-                    }
+                    // Set current question/challenge based on new flow
+                    const flowOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
+                    const flowTypes = ['aptitude', 'challenge', 'aptitude', 'challenge', 'aptitude', 'challenge'];
+                    const challengeMap = { 'q2': 'debug', 'q4': 'trace', 'q6': 'program' };
 
-                    if (firstIncompleteAptitude !== -1) {
-                        setCurrentQuestion(firstIncompleteAptitude);
-                        console.log(`📍 Restored to aptitude question ${firstIncompleteAptitude + 1}`);
-                    } else {
-                        // All aptitude questions completed, check for incomplete challenges
-                        let firstIncompleteChallenge = null;
-                        const challengeKeys = ['q4', 'q5', 'q6'];
-                        const challengeNames = ['debug', 'trace', 'program'];
-
-                        for (let i = 0; i < challengeKeys.length; i++) {
-                            const qKey = challengeKeys[i];
-                            if (team.unlockedQuestions[qKey] && !team.completedQuestions[qKey]) {
-                                firstIncompleteChallenge = challengeNames[i];
-                                break;
+                    let firstIncomplete = null;
+                    for (let i = 0; i < flowOrder.length; i++) {
+                        const qKey = flowOrder[i];
+                        if (team.unlockedQuestions[qKey] && !team.completedQuestions[qKey]) {
+                            if (flowTypes[i] === 'aptitude') {
+                                const aptitudeStep = qKey === 'q1' ? 0 : qKey === 'q3' ? 1 : 2;
+                                setCurrentQuestion(aptitudeStep);
+                                console.log(`📍 Restored to aptitude question ${aptitudeStep + 1}`);
+                            } else {
+                                setCurrentChallenge(challengeMap[qKey]);
+                                console.log(`📍 Restored to challenge: ${challengeMap[qKey]}`);
                             }
-                        }
-
-                        if (firstIncompleteChallenge) {
-                            setCurrentChallenge(firstIncompleteChallenge);
-                            console.log(`📍 Restored to challenge: ${firstIncompleteChallenge}`);
+                            break;
                         }
                     }
 
@@ -194,20 +182,30 @@ const Round2Page = () => {
                 setCompletedAptitudeQuestions(prev => [...prev, currentQuestion]);
                 console.log('Answer correct, marking question as completed');
 
-                // Automatically move to the unlocked challenge
-                const challengeMap = { 0: 'debug', 1: 'trace', 2: 'program' };
-                const nextChallenge = challengeMap[currentQuestion];
-                if (nextChallenge) {
-                    setCurrentChallenge(nextChallenge);
+                // Automatically move to the next question/challenge based on flow
+                if (currentQuestion === 0) {
+                    // Q1 (aptitude) completed - move to Q2 (debug)
+                    setCurrentChallenge('debug');
+                } else if (currentQuestion === 1) {
+                    // Q3 (aptitude) completed - move to Q4 (trace)
+                    setCurrentChallenge('trace');
+                } else if (currentQuestion === 2) {
+                    // Q5 (aptitude) completed - move to Q6 (program)
+                    setCurrentChallenge('program');
                 }
             } else {
                 console.log('Answer incorrect, attempts left:', response.attemptsLeft);
                 if (response.attemptsLeft === 0) {
-                    // Automatically move to the unlocked challenge even if failed
-                    const challengeMap = { 0: 'debug', 1: 'trace', 2: 'program' };
-                    const nextChallenge = challengeMap[currentQuestion];
-                    if (nextChallenge) {
-                        setCurrentChallenge(nextChallenge);
+                    // Automatically move to the next question/challenge even if failed
+                    if (currentQuestion === 0) {
+                        // Q1 (aptitude) failed - move to Q2 (debug)
+                        setCurrentChallenge('debug');
+                    } else if (currentQuestion === 1) {
+                        // Q3 (aptitude) failed - move to Q4 (trace)
+                        setCurrentChallenge('trace');
+                    } else if (currentQuestion === 2) {
+                        // Q5 (aptitude) failed - move to Q6 (program)
+                        setCurrentChallenge('program');
                     }
                 }
             }
@@ -262,11 +260,16 @@ const Round2Page = () => {
                     navigate('/team');
                 }, 2000); // Give user 2 seconds to see completion message
             } else {
-                // Automatically move to the next aptitude question
-                const challengeToAptitudeMap = { 'debug': 1, 'trace': 2, 'program': 3 };
-                const nextAptitude = challengeToAptitudeMap[currentChallenge];
-                if (nextAptitude && nextAptitude <= 2) {
-                    setCurrentQuestion(nextAptitude);
+                // Automatically move to the next aptitude question after coding challenge
+                if (currentChallenge === 'debug') {
+                    // Q2 (debug) completed - move to Q3 (aptitude)
+                    setCurrentQuestion(1);
+                } else if (currentChallenge === 'trace') {
+                    // Q4 (trace) completed - move to Q5 (aptitude)
+                    setCurrentQuestion(2);
+                } else if (currentChallenge === 'program') {
+                    // Q6 (program) completed - quiz is done
+                    setIsQuizCompleted(true);
                 }
             }
         } catch (error) {
@@ -318,11 +321,11 @@ const Round2Page = () => {
     };
 
     const handleChallengeClick = (challengeId) => {
-        // Find which aptitude question unlocks this challenge
+        // Find which aptitude question unlocks this challenge based on new flow
         const challengeMap = {
-            'debug': 0,
-            'trace': 1,
-            'program': 2
+            'debug': 0,  // Q2 (debug) unlocked by Q1 (aptitude step 0)
+            'trace': 1,  // Q4 (trace) unlocked by Q3 (aptitude step 1)
+            'program': 2 // Q6 (program) unlocked by Q5 (aptitude step 2)
         };
         const requiredAptitude = challengeMap[challengeId];
 
@@ -389,89 +392,64 @@ const Round2Page = () => {
 
                             {/* Sequential Question Flow */}
                             {[
-                                { aptitude: 0, challenge: 'debug', challengeName: 'Debug Q1' },
-                                { aptitude: 1, challenge: 'trace', challengeName: 'Output Q2' },
-                                { aptitude: 2, challenge: 'program', challengeName: 'Program Q3' }
-                            ].map((pair, index) => {
-                                const aptitudeKey = `q${pair.aptitude + 1}`;
-                                const challengeKey = `q${pair.aptitude + 4}`;
-
-                                const aptitudeCompleted = teamProgress ? teamProgress.completedQuestions[aptitudeKey] : false;
-                                const challengeCompleted = teamProgress ? teamProgress.completedQuestions[challengeKey] : false;
-
-                                // Sequential unlocking logic
-                                const aptitudeUnlocked = teamProgress ? teamProgress.unlockedQuestions[aptitudeKey] : (pair.aptitude === 0);
-                                const challengeUnlocked = teamProgress ? teamProgress.unlockedQuestions[challengeKey] : false;
-
-                                const isCurrentAptitude = currentQuestion === pair.aptitude && !aptitudeCompleted;
-                                const isCurrentChallenge = currentChallenge === pair.challenge;
+                                { type: 'aptitude', number: 1, key: 'q1', step: 0 },
+                                { type: 'challenge', number: 2, key: 'q2', challenge: 'debug', name: 'Debug' },
+                                { type: 'aptitude', number: 3, key: 'q3', step: 1 },
+                                { type: 'challenge', number: 4, key: 'q4', challenge: 'trace', name: 'Output' },
+                                { type: 'aptitude', number: 5, key: 'q5', step: 2 },
+                                { type: 'challenge', number: 6, key: 'q6', challenge: 'program', name: 'Program' }
+                            ].map((item, index) => {
+                                const isCompleted = teamProgress ? teamProgress.completedQuestions[item.key] : false;
+                                const isUnlocked = teamProgress ? teamProgress.unlockedQuestions[item.key] : (item.number === 1);
+                                const isCurrent = item.type === 'aptitude' ?
+                                    (currentQuestion === item.step && !isCompleted) :
+                                    (currentChallenge === item.challenge);
 
                                 return (
-                                    <div key={pair.aptitude} className="space-y-2">
-                                        {/* Aptitude Question */}
+                                    <div key={item.key} className="space-y-2">
                                         <div
                                             onClick={() => {
-                                                console.log('Sidebar aptitude clicked:', pair.aptitude, 'Completed:', aptitudeCompleted, 'Unlocked:', aptitudeUnlocked);
-                                                if (aptitudeUnlocked && !aptitudeCompleted) {
-                                                    handleQuestionClick(pair.aptitude);
+                                                if (item.type === 'aptitude') {
+                                                    console.log('Sidebar aptitude clicked:', item.step, 'Completed:', isCompleted, 'Unlocked:', isUnlocked);
+                                                    if (isUnlocked && !isCompleted) {
+                                                        handleQuestionClick(item.step);
+                                                    }
+                                                } else {
+                                                    console.log('Sidebar challenge clicked:', item.challenge, 'Unlocked:', isUnlocked, 'Completed:', isCompleted);
+                                                    if (isUnlocked && !isCompleted) {
+                                                        handleChallengeClick(item.challenge);
+                                                    }
                                                 }
                                             }}
-                                            className={`p-3 rounded-xl border transition-all duration-500 transform hover:scale-105 ${isCurrentAptitude
+                                            className={`p-3 rounded-xl border transition-all duration-500 transform hover:scale-105 ${isCurrent
                                                 ? 'border-purple-400 shadow-2xl bg-purple-500/20 cursor-pointer glow-purple'
-                                                : aptitudeCompleted
+                                                : isCompleted
                                                     ? 'border-green-500 bg-green-500/20'
-                                                    : aptitudeUnlocked
+                                                    : isUnlocked
                                                         ? 'border-purple-500/30 bg-purple-500/10 cursor-pointer hover:border-purple-400 hover:bg-purple-500/20'
                                                         : 'border-gray-600 bg-gray-500/20 opacity-50'
                                                 }`}
                                         >
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center">
-                                                    <span className="text-sm font-medium text-slate-200">Q{pair.aptitude + 1}: Aptitude</span>
-                                                    {!aptitudeUnlocked && (
+                                                    <span className="text-sm font-medium text-slate-200">
+                                                        Q{item.number}: {item.type === 'aptitude' ? 'Aptitude' : item.name}
+                                                    </span>
+                                                    {!isUnlocked && (
                                                         <span className="ml-2 text-xs text-slate-500">🔒 Locked</span>
                                                     )}
-                                                    {aptitudeUnlocked && !aptitudeCompleted && (
+                                                    {isUnlocked && !isCompleted && (
                                                         <div className="ml-2 flex items-center space-x-1">
                                                             <span className="text-xs text-cyan-400">Click to solve</span>
-                                                            <span className="text-xs text-yellow-400">
-                                                                ({teamProgress ? 2 - teamProgress.aptitudeAttempts[`q${pair.aptitude + 1}`] : 2}/2 chances)
-                                                            </span>
+                                                            {item.type === 'aptitude' && (
+                                                                <span className="text-xs text-yellow-400">
+                                                                    ({teamProgress ? 2 - teamProgress.aptitudeAttempts[item.key] : 2}/2 chances)
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
-                                                {aptitudeCompleted && <span className="text-green-400 text-sm">✓</span>}
-                                            </div>
-                                        </div>
-
-                                        {/* Connected Challenge */}
-                                        <div
-                                            onClick={() => {
-                                                console.log('Sidebar challenge clicked:', pair.challenge, 'Unlocked:', challengeUnlocked, 'Completed:', challengeCompleted);
-                                                if (challengeUnlocked && !challengeCompleted) {
-                                                    handleChallengeClick(pair.challenge);
-                                                }
-                                            }}
-                                            className={`p-3 rounded-xl border transition-all duration-500 transform hover:scale-105 ml-4 ${isCurrentChallenge
-                                                ? 'border-purple-400 shadow-2xl bg-purple-500/20 glow-purple'
-                                                : challengeCompleted
-                                                    ? 'border-green-500 bg-green-500/20'
-                                                    : challengeUnlocked
-                                                        ? 'border-purple-500/30 bg-purple-500/10 cursor-pointer hover:border-purple-400 hover:bg-purple-500/20'
-                                                        : 'border-gray-600 bg-gray-500/20 opacity-50'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center">
-                                                    <span className="text-sm font-medium text-slate-200">Q{pair.aptitude + 4}: {pair.challengeName}</span>
-                                                    {!challengeUnlocked && (
-                                                        <span className="ml-2 text-xs text-slate-500">🔒 Locked</span>
-                                                    )}
-                                                    {challengeUnlocked && !challengeCompleted && (
-                                                        <span className="ml-2 text-xs text-cyan-400">Click to solve</span>
-                                                    )}
-                                                </div>
-                                                {challengeCompleted && <span className="text-green-400 text-sm">✓</span>}
+                                                {isCompleted && <span className="text-green-400 text-sm">✓</span>}
                                             </div>
                                         </div>
                                     </div>

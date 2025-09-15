@@ -93,12 +93,12 @@ router.post('/apt/answer', async (req, res) => {
         team.scores[questionKey] = score;
         team.totalScore = Object.values(team.scores).reduce((sum, score) => sum + score, 0);
 
-        // Sequential unlocking: Only unlock the immediate next question
-        if (step === 0) { // Q1 completed - unlock Q4 (Debug)
+        // Sequential unlocking: Aptitude → Debug → Aptitude → Trace → Aptitude → Program
+        if (step === 0) { // Q1 (aptitude) completed - unlock Q2 (debug)
+            team.unlockedQuestions.q2 = true;
+        } else if (step === 1) { // Q3 (aptitude) completed - unlock Q4 (trace)
             team.unlockedQuestions.q4 = true;
-        } else if (step === 1) { // Q2 completed - unlock Q5 (Trace)
-            team.unlockedQuestions.q5 = true;
-        } else if (step === 2) { // Q3 completed - unlock Q6 (Program)
+        } else if (step === 2) { // Q5 (aptitude) completed - unlock Q6 (program)
             team.unlockedQuestions.q6 = true;
         }
 
@@ -180,8 +180,8 @@ router.post('/code/submit', async (req, res) => {
 
         // Map challenge type to question number and step
         const challengeMap = {
-            'debug': { questionNumber: 'q4', step: 1 },
-            'trace': { questionNumber: 'q5', step: 2 },
+            'debug': { questionNumber: 'q2', step: 1 },
+            'trace': { questionNumber: 'q4', step: 2 },
             'program': { questionNumber: 'q6', step: 3 }
         };
 
@@ -224,10 +224,10 @@ router.post('/code/submit', async (req, res) => {
             team.totalScore = Object.values(team.scores).reduce((sum, score) => sum + score, 0);
 
             // Sequential unlocking: Unlock next aptitude question when coding challenge is completed
-            if (challengeType === 'debug') { // Q4 completed - unlock Q2
-                team.unlockedQuestions.q2 = true;
-            } else if (challengeType === 'trace') { // Q5 completed - unlock Q3
+            if (challengeType === 'debug') { // Q2 (debug) completed - unlock Q3 (aptitude)
                 team.unlockedQuestions.q3 = true;
+            } else if (challengeType === 'trace') { // Q4 (trace) completed - unlock Q5 (aptitude)
+                team.unlockedQuestions.q5 = true;
             }
 
             // Check if all questions are completed
@@ -283,8 +283,8 @@ router.post('/code/autosave', async (req, res) => {
 
         // Map challenge type to question number and step
         const challengeMap = {
-            'debug': { questionNumber: 'q4', step: 1 },
-            'trace': { questionNumber: 'q5', step: 2 },
+            'debug': { questionNumber: 'q2', step: 1 },
+            'trace': { questionNumber: 'q4', step: 2 },
             'program': { questionNumber: 'q6', step: 3 }
         };
 

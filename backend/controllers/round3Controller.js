@@ -1,5 +1,6 @@
 // backend/controllers/round3Controller.js
 import Team from '../models/Team.js';
+import Round3Question from '../models/Round3Question.js';
 
 export const submitRound3 = async (req, res) => {
     try {
@@ -162,6 +163,27 @@ export const updateRound3Score = async (req, res) => {
 // @desc    Get team Round 3 progress
 // @route   GET /api/round3/team/:teamId/progress
 // @access  Public
+// @desc    Get Round 3 questions
+// @route   GET /api/round3/questions
+// @access  Public
+export const getRound3Questions = async (req, res) => {
+    try {
+        const questions = await Round3Question.findOne({ round: 'Round3' });
+
+        if (!questions) {
+            return res.status(404).json({ error: 'Round 3 questions not found' });
+        }
+
+        res.json({
+            questions: questions.questions,
+            questionOrders: questions.questionOrders
+        });
+    } catch (error) {
+        console.error('Get Round 3 questions error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export const getTeamRound3Progress = async (req, res) => {
     try {
         const { teamId } = req.params;
