@@ -319,7 +319,7 @@ const TeamPage = () => {
             <h1 className='text-5xl sm:text-6xl font-bold text-white mb-6 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl'>
               Welcome, {teamName}!
             </h1>
-            <p className='text-lg text-gray-300 mb-4'>Your team dashboard - check results and start new rounds</p>
+            <p className='text-lg text-gray-300 mb-4'>Your team dashboard -  start new rounds</p>
 
           </div>
         </div>
@@ -406,7 +406,7 @@ const TeamPage = () => {
                       <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z" />
                     </svg>
                   </div>
-                  <h3 className='text-2xl font-bold text-white'>Round 3: C-Matrix Code Rush</h3>
+                  <h3 className='text-2xl font-bold text-white'>Round 3:  Code Rush</h3>
                   <p className='text-sm font-medium text-gray-300 text-center leading-relaxed'>
                     {getRoundMessage(rounds.round3, 3)}
                   </p>

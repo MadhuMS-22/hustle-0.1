@@ -92,7 +92,9 @@ const TeamPage = () => {
         <div className='text-center py-12 px-4'>
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-center mb-6">
-              <img src="/h-logo.png" alt="Team Icon" className="h-24 w-24" />
+              <div className="h-24 w-32 relative overflow-hidden rounded-lg">
+                <img src="/h-logo.svg" alt="Team Icon" className="w-full h-full object-cover object-center" />
+              </div>
             </div>
             <h1 className='text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent'>
               Welcome, {teamName}!

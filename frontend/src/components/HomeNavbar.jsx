@@ -20,7 +20,9 @@ const HomeNavbar = () => {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <button onClick={() => navigate('/')} className="flex items-center group">
-              <img src="/h-logo.png" alt="Hustle Logo" className="h-12 w-12 group-hover:scale-110 transition-all duration-500" />
+              <div className="h-12 w-18 relative overflow-hidden rounded-lg">
+                <img src="/h-logo.svg" alt="Hustle Logo" className="w-full h-full object-cover object-center group-hover:scale-110 transition-all duration-500" />
+              </div>
             </button>
           </div>
 

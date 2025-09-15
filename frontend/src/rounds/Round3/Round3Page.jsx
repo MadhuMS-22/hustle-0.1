@@ -22,15 +22,15 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
-          <div className="w-full max-w-2xl p-8 bg-red-900 rounded-xl shadow-lg text-center">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="w-full max-w-2xl p-8 bg-red-900/80 backdrop-blur-sm rounded-xl shadow-2xl text-center border border-red-500/50">
             <h1 className="text-3xl font-bold mb-4 text-red-400">Something went wrong</h1>
             <p className="text-lg text-red-200 mb-6">
               There was an error loading Round 3. Please refresh the page or contact support.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+              className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105 shadow-xl"
             >
               Refresh Page
             </button>
@@ -204,7 +204,7 @@ const AdminPage = ({ onGoBack }) => {
 
   if (loading || !questionsData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
           {loading ? 'Loading scores...' : 'Loading questions...'}
@@ -215,7 +215,7 @@ const AdminPage = ({ onGoBack }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="text-center text-red-500">
           <h2 className="text-2xl font-bold mb-4">Error Loading Admin Page</h2>
           <p className="mb-4">Error: {error}</p>
@@ -232,7 +232,7 @@ const AdminPage = ({ onGoBack }) => {
 
   if (showPrograms && selectedTeam) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center relative overflow-hidden">
         <div className="w-full max-w-6xl p-8 glass-dark rounded-xl shadow-2xl mt-10">
           <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-6 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
             {selectedTeam.teamName} - All Programs
@@ -348,7 +348,7 @@ const AdminPage = ({ onGoBack }) => {
           <div className="flex justify-center gap-4">
             <button
               onClick={handleBackToList}
-              className="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-500 transform hover:scale-105 shadow-xl glow-purple"
+              className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-bold py-2 px-4 rounded-full transition duration-500 transform hover:scale-105 shadow-xl glow-blue"
             >
               Back to Teams
             </button>
@@ -365,9 +365,9 @@ const AdminPage = ({ onGoBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 flex flex-col items-center">
-      <div className="w-full max-w-7xl p-8 bg-gray-800 rounded-xl shadow-lg mt-10">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-6 text-indigo-400">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center relative overflow-hidden">
+      <div className="w-full max-w-7xl p-8 glass-dark rounded-xl shadow-2xl mt-10">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-6 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
           Round 3 Admin Dashboard
         </h1>
         <p className="text-center mb-8 text-gray-300">
@@ -382,7 +382,7 @@ const AdminPage = ({ onGoBack }) => {
               const percentage = Math.round(((score.round3Score || 0) / maxPossibleScore) * 100);
 
               return (
-                <div key={score._id || index} className="bg-gray-700 rounded-lg p-6 relative">
+                <div key={score._id || index} className="glass-dark rounded-lg p-6 relative">
                   {/* Ranking Badge */}
                   <div className="absolute -top-2 -left-2 w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-black font-bold text-lg shadow-lg">
                     #{rank}
@@ -418,7 +418,7 @@ const AdminPage = ({ onGoBack }) => {
                   <div className="flex justify-end">
                     <button
                       onClick={() => handleViewPrograms(score)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105"
+                      className="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105 shadow-xl glow-purple"
                     >
                       View All Programs
                     </button>
@@ -436,7 +436,7 @@ const AdminPage = ({ onGoBack }) => {
         <div className="flex justify-center mt-8">
           <button
             onClick={onGoBack}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:via-indigo-700 hover:to-indigo-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105 shadow-xl glow-blue"
           >
             Go Back to Game
           </button>
@@ -451,9 +451,9 @@ const QuestionComponent = ({ question, questionIndex, selectedAnswers, onAnswerC
     const answerKey = `${questionIndex}-${blockIndex}`;
     const isSelected = selectedAnswers[answerKey] === option;
     if (isSelected) {
-      return 'bg-blue-600 border-2 border-blue-400';
+      return 'bg-gradient-to-r from-purple-500 to-purple-600 border-2 border-purple-400 shadow-lg glow-purple';
     }
-    return 'bg-gray-700 hover:bg-gray-600 border-2 border-transparent';
+    return 'glass-dark hover:bg-purple-900/20 border-2 border-transparent hover:border-purple-500/50';
   };
 
   const isBlockAnswered = (blockIndex) => {
@@ -493,8 +493,8 @@ const QuestionComponent = ({ question, questionIndex, selectedAnswers, onAnswerC
               </div>
             ) : (
               <div>
-                <div className="bg-gray-900 rounded-md p-3 shadow-inner">
-                  <pre className="whitespace-pre-wrap text-sm font-mono overflow-x-auto">
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-md p-3 shadow-inner border border-gray-700">
+                  <pre className="whitespace-pre-wrap text-sm font-mono overflow-x-auto text-gray-200">
                     <code>{block.code}</code>
                   </pre>
                 </div>
@@ -958,7 +958,7 @@ const Round3Page = () => {
   // Show loading state while fetching questions
   if (loading || !questionsData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
           <h2 className="text-xl font-bold mb-2">Loading Questions...</h2>
@@ -971,13 +971,13 @@ const Round3Page = () => {
   // Show error state if there's an error
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="text-center text-red-500">
           <h2 className="text-2xl font-bold mb-4">Error Loading Round 3</h2>
           <p className="text-lg mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+            className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 transform hover:scale-105 shadow-xl"
           >
             Refresh Page
           </button>
@@ -987,7 +987,7 @@ const Round3Page = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center relative overflow-hidden">
       {/* State Recovery Notification */}
       {showStateRecovery && (
         <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in">
@@ -1011,9 +1011,9 @@ const Round3Page = () => {
         </div>
       )}
 
-      <div className="w-full max-w-6xl p-8 bg-gray-800 rounded-xl shadow-lg">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-4 text-indigo-400">
-          Round 3: CODE RUSH
+      <div className="w-full max-w-6xl p-8 glass-dark rounded-xl shadow-2xl">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-4 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
+          Round 3: C-Matrix Code Rush
         </h1>
         <p className="text-xl text-center mb-8 text-gray-300">
           Complete 5 C programming puzzles. Each question has a 5-minute timer.
@@ -1026,7 +1026,7 @@ const Round3Page = () => {
               <p className="text-lg text-gray-300 mb-6">
                 Test your C programming skills with 5 challenging puzzles!
               </p>
-              <div className="bg-gray-700 p-6 rounded-lg mb-6">
+              <div className="glass-dark p-6 rounded-lg mb-6">
                 <h3 className="text-xl font-bold text-indigo-400 mb-4">Game Rules:</h3>
                 <ul className="text-left text-gray-300 space-y-2">
                   <li>• Complete 5 different C programming puzzles</li>
@@ -1051,7 +1051,7 @@ const Round3Page = () => {
                 disabled={!questionsData || !questionsData.questionOrders || !questionsData.questions}
                 className={`font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 ${!questionsData || !questionsData.questionOrders || !questionsData.questions
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white shadow-xl glow-purple'
                   }`}
               >
                 {!questionsData || !questionsData.questionOrders || !questionsData.questions
@@ -1123,13 +1123,13 @@ const Round3Page = () => {
             <div className="flex justify-center gap-4 mt-8">
               <button
                 onClick={handleNextQuestion}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105"
+                className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 shadow-xl glow-blue"
               >
                 Next Question
               </button>
               <button
                 onClick={handleQuizCompletion}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105"
+                className="bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 shadow-xl"
               >
                 Finish Quiz
               </button>
@@ -1144,7 +1144,7 @@ const Round3Page = () => {
           </>
         ) : (
           <div className="text-center">
-            <div className="bg-gray-700 p-8 rounded-lg mb-6">
+            <div className="glass-dark p-8 rounded-lg mb-6">
               <div className="text-6xl mb-4">✅</div>
               <h2 className="text-3xl font-bold mb-4 text-green-400">Quiz Submitted Successfully!</h2>
               <p className="text-xl text-gray-300 mb-6">
@@ -1164,7 +1164,7 @@ const Round3Page = () => {
                     // Navigate back to team page - Round 3 submission already updated the team data
                     navigate('/team');
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105"
+                  className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 shadow-xl glow-blue"
                 >
                   Go Back to Team Page
                 </button>
