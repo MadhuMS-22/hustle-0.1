@@ -204,7 +204,7 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                 <div className="glass-dark rounded-3xl shadow-2xl p-8 mb-8">
                     <div className="flex justify-between items-center mb-8">
                         <div>
-                            <h2 className="text-5xl sm:text-6xl font-extrabold text-white mb-6 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
+                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
                                 Trace The Program
                             </h2>
                         </div>
@@ -221,9 +221,9 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                         </div>
                     </div>
 
-                    <div className="glass rounded-2xl p-8">
-                        <h3 className="text-2xl font-bold text-white mb-4">Instructions:</h3>
-                        <p className="text-gray-300 leading-relaxed text-lg">
+                    <div className="glass rounded-xl p-4">
+                        <h3 className="text-lg font-bold text-white mb-2">Instructions:</h3>
+                        <p className="text-gray-300 leading-relaxed text-sm">
                             Trace through the following recursive function and determine what output it will produce.
                             This is a factorial function - trace through the recursive calls step by step.
                         </p>
@@ -252,7 +252,7 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                             value={output}
                             onChange={(e) => setOutput(e.target.value)}
                             placeholder="Enter the expected output here..."
-                            className="w-full h-32 p-6 bg-gray-900/50 border border-purple-500/30 rounded-2xl font-mono text-sm text-gray-200 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all duration-500 backdrop-blur-sm"
+                            className="w-full h-96 p-6 bg-gray-900/50 border border-purple-500/30 rounded-2xl font-mono text-sm text-gray-200 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all duration-500 backdrop-blur-sm"
                         />
 
                         <div className="mt-6 flex gap-4">

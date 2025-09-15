@@ -186,7 +186,7 @@ const Program = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                 <div className="glass-dark rounded-3xl shadow-2xl p-8 mb-8">
                     <div className="flex justify-between items-center mb-8">
                         <div>
-                            <h2 className="text-5xl sm:text-6xl font-extrabold text-white mb-6 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
+                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
                                 Write The Program
                             </h2>
                         </div>
@@ -203,56 +203,55 @@ const Program = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                         </div>
                     </div>
 
-                    <div className="glass rounded-2xl p-8">
-                        <h3 className="text-2xl font-bold text-white mb-4">Problem Statement:</h3>
-                        <div className="bg-gray-900/50 rounded-2xl p-6 border-l-4 border-orange-500 backdrop-blur-sm">
-                            <pre className="text-gray-300 whitespace-pre-line font-mono text-sm leading-relaxed">{problemStatement}</pre>
+                    <div className="glass rounded-xl p-4">
+                        <h3 className="text-lg font-bold text-white mb-2">Problem Statement:</h3>
+                        <div className="bg-gray-900/50 rounded-xl p-4 border-l-4 border-orange-500 backdrop-blur-sm">
+                            <pre className="text-gray-300 whitespace-pre-line font-mono text-xs leading-relaxed">{problemStatement}</pre>
                         </div>
                     </div>
-                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="glass-dark rounded-3xl shadow-2xl p-8">
-                        <h3 className="text-3xl font-bold text-white mb-6 flex items-center">
-                            <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-xl text-lg font-semibold mr-4">SAMPLE</span>
+                    <div className="glass rounded-xl p-4 mt-4">
+                        <h3 className="text-lg font-bold text-white mb-2 flex items-center">
+                            <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 py-1 rounded-lg text-sm font-semibold mr-2">SAMPLE</span>
                             Sample Output
                         </h3>
-                        <div className="bg-gray-900/50 rounded-2xl p-6 overflow-x-auto border border-purple-500/30 backdrop-blur-sm">
-                            <pre className="text-green-400 text-sm font-mono leading-relaxed">
+                        <div className="bg-gray-900/50 rounded-xl p-4 overflow-x-auto border border-purple-500/30 backdrop-blur-sm">
+                            <pre className="text-green-400 text-xs font-mono leading-relaxed">
                                 <code>{sampleOutput}</code>
                             </pre>
                         </div>
                     </div>
+                </div>
 
-                    <div className="glass-dark rounded-3xl shadow-2xl p-8">
-                        <h3 className="text-3xl font-bold text-white mb-6 flex items-center">
-                            <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-xl text-lg font-semibold mr-4">CODE</span>
-                            Your Code
-                        </h3>
-                        <textarea
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                            placeholder="Write your C program here..."
-                            className="w-full h-64 p-6 bg-gray-900/50 border border-purple-500/30 rounded-2xl font-mono text-sm text-gray-200 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all duration-500 backdrop-blur-sm"
-                        />
+                <div className="glass-dark rounded-3xl shadow-2xl p-8 mt-8">
+                    <h3 className="text-3xl font-bold text-white mb-6 flex items-center">
+                        <span className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-xl text-lg font-semibold mr-4">CODE</span>
+                        Your Code
+                    </h3>
+                    <textarea
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        placeholder="Write your C program here..."
+                        className="w-full p-6 bg-gray-900/50 border border-purple-500/30 rounded-2xl font-mono text-sm text-gray-200 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all duration-500 backdrop-blur-sm"
+                        style={{ height: '32rem' }}
+                    />
 
-                        <div className="mt-6 flex gap-4">
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!code.trim() || timeLeft === 0 || submitting}
-                                className={`group flex-1 py-4 px-8 rounded-2xl font-bold text-lg transition-all duration-500 transform hover:scale-110 ${code.trim() && timeLeft > 0 && !submitting
-                                    ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white shadow-2xl glow-purple'
-                                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                    }`}
-                            >
-                                {submitting ? 'Submitting...' : 'Submit Program'}
-                                {code.trim() && timeLeft > 0 && !submitting && (
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
+                    <div className="mt-6 flex gap-4">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!code.trim() || timeLeft === 0 || submitting}
+                            className={`group flex-1 py-4 px-8 rounded-2xl font-bold text-lg transition-all duration-500 transform hover:scale-110 ${code.trim() && timeLeft > 0 && !submitting
+                                ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white shadow-2xl glow-purple'
+                                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                }`}
+                        >
+                            {submitting ? 'Submitting...' : 'Submit Program'}
+                            {code.trim() && timeLeft > 0 && !submitting && (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>

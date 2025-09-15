@@ -213,11 +213,6 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                         Fix the Code Below
                     </h3>
 
-                    <div className="mb-3 p-3 glass rounded-xl">
-                        <p className="text-gray-300 text-sm">
-                            Find and fix the bug in the code below.
-                        </p>
-                    </div>
 
                     <textarea
                         value={code}

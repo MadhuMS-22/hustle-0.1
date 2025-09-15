@@ -21,6 +21,8 @@ const ChallengeSelection = ({ onStart }) => {
                             <li>Each aptitude question has <strong>two attempts</strong>. A correct first attempt gives <strong>2 points</strong>, while a correct second attempt gives <strong>1 point</strong>.</li>
                             <li>The coding challenges (Debug, Trace, Program) do not award points directly. Submissions will be reviewed by administrators.</li>
                             <li>Each coding challenge has a 5-minute timer.</li>
+                            <li>Each coding challenge has its own specific time limit that must be followed strictly.</li>
+                            <li>The total time allotted for Round 2 is 45 minutes, within which all challenges must be completed and submitted.</li>
                         </ul>
                     </div>
                     <div className="flex justify-center">
