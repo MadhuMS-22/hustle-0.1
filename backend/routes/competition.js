@@ -128,8 +128,28 @@ const verifyRound3Code = async (req, res) => {
 
         // Note: Round 2 completion constraint removed - any authenticated team can access Round 3 with correct code
 
-        // Verify the access code
-        if (code && code.trim().toLowerCase() === 'x24') {
+        if (!code || !code.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Access code is required'
+            });
+        }
+
+        // Get the active Round 3 code from database
+        const round3Code = await RoundCodes.getActiveCode(3);
+
+        if (!round3Code) {
+            return res.status(500).json({
+                success: false,
+                message: 'Round 3 access code not configured. Please contact admin.'
+            });
+        }
+
+        // Verify the access code (case-insensitive)
+        if (code.trim().toLowerCase() === round3Code.code.toLowerCase()) {
+            // Increment usage count
+            await round3Code.incrementUsage();
+
             res.status(200).json({
                 success: true,
                 message: 'Access code verified successfully',

@@ -61,6 +61,58 @@ const Round2Page = () => {
         }
     }, [teamId]);
 
+    // Simplified state recovery function
+    const restoreQuizState = (team) => {
+        try {
+            // Restore completed aptitude questions
+            const completedAptitude = [];
+            for (let i = 0; i < 3; i++) {
+                const questionKey = `q${i + 1}`;
+                if (team.completedQuestions[questionKey]) {
+                    completedAptitude.push(i);
+                }
+            }
+            setCompletedAptitudeQuestions(completedAptitude);
+
+            // Restore completed challenges
+            const completedChallenges = [];
+            const challengeMap = { 'q2': 'debug', 'q4': 'trace', 'q6': 'program' };
+            Object.keys(challengeMap).forEach(qKey => {
+                if (team.completedQuestions[qKey]) {
+                    completedChallenges.push(challengeMap[qKey]);
+                }
+            });
+            setCompletedChallenges(completedChallenges);
+
+            // Find next incomplete question/challenge
+            // Flow: Q1 (aptitude) -> Q2 (debug) -> Q3 (aptitude) -> Q4 (trace) -> Q5 (aptitude) -> Q6 (program)
+            const flowOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
+            const flowTypes = ['aptitude', 'challenge', 'aptitude', 'challenge', 'aptitude', 'challenge'];
+
+            for (let i = 0; i < flowOrder.length; i++) {
+                const qKey = flowOrder[i];
+                if (team.unlockedQuestions[qKey] && !team.completedQuestions[qKey]) {
+                    if (flowTypes[i] === 'aptitude') {
+                        const aptitudeStep = qKey === 'q1' ? 0 : qKey === 'q3' ? 1 : 2;
+                        setCurrentQuestion(aptitudeStep);
+                        setCurrentChallenge(null); // Clear any challenge
+                        console.log(`📍 Restored to aptitude question ${aptitudeStep + 1}`);
+                    } else {
+                        setCurrentChallenge(challengeMap[qKey]);
+                        setCurrentQuestion(null); // Clear any question
+                        console.log(`📍 Restored to challenge: ${challengeMap[qKey]}`);
+                    }
+                    break;
+                }
+            }
+        } catch (error) {
+            console.error('Error in state recovery:', error);
+            // Fallback: start from beginning
+            setCurrentQuestion(0);
+            setCurrentChallenge(null);
+        }
+    };
+
     const loadTeamProgress = async (teamId) => {
         try {
             setIsLoading(true);
@@ -80,45 +132,8 @@ const Round2Page = () => {
                     setIsQuizStarted(true);
                     setShowStateRecovery(true);
 
-                    // Restore completed aptitude questions
-                    const completedAptitude = [];
-                    for (let i = 0; i < 3; i++) {
-                        const questionKey = `q${i + 1}`;
-                        if (team.completedQuestions[questionKey]) {
-                            completedAptitude.push(i);
-                        }
-                    }
-                    setCompletedAptitudeQuestions(completedAptitude);
-
-                    // Restore completed challenges
-                    const completedChallenges = [];
-                    const challengeMap = { 'q2': 'debug', 'q4': 'trace', 'q6': 'program' };
-                    Object.keys(challengeMap).forEach(qKey => {
-                        if (team.completedQuestions[qKey]) {
-                            completedChallenges.push(challengeMap[qKey]);
-                        }
-                    });
-                    setCompletedChallenges(completedChallenges);
-
-                    // Set current question/challenge based on new flow
-                    const flowOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
-                    const flowTypes = ['aptitude', 'challenge', 'aptitude', 'challenge', 'aptitude', 'challenge'];
-
-                    let firstIncomplete = null;
-                    for (let i = 0; i < flowOrder.length; i++) {
-                        const qKey = flowOrder[i];
-                        if (team.unlockedQuestions[qKey] && !team.completedQuestions[qKey]) {
-                            if (flowTypes[i] === 'aptitude') {
-                                const aptitudeStep = qKey === 'q1' ? 0 : qKey === 'q3' ? 1 : 2;
-                                setCurrentQuestion(aptitudeStep);
-                                console.log(`📍 Restored to aptitude question ${aptitudeStep + 1}`);
-                            } else {
-                                setCurrentChallenge(challengeMap[qKey]);
-                                console.log(`📍 Restored to challenge: ${challengeMap[qKey]}`);
-                            }
-                            break;
-                        }
-                    }
+                    // Simplified state recovery
+                    restoreQuizState(team);
 
                     // Restore quiz start time if available
                     if (team.startTime) {
@@ -165,8 +180,13 @@ const Round2Page = () => {
             // Check if question is already completed
             const questionKey = `q${currentQuestion + 1}`;
             if (teamProgress?.completedQuestions?.[questionKey]) {
-                console.log(`Question ${questionKey} already completed, skipping submission`);
-                alert('This question has already been completed. Please select an incomplete question.');
+                console.log(`Question ${questionKey} already completed, moving to next`);
+                // Move to next challenge
+                const challengeMap = { 0: 'debug', 1: 'trace', 2: 'program' };
+                const nextChallenge = challengeMap[currentQuestion];
+                if (nextChallenge) {
+                    setCurrentChallenge(nextChallenge);
+                }
                 setIsSubmitting(false);
                 return;
             }
@@ -180,7 +200,6 @@ const Round2Page = () => {
             if (response.correct) {
                 setCompletedAptitudeQuestions(prev => [...prev, currentQuestion]);
                 console.log('Answer correct, marking question as completed');
-                alert('✅ Correct answer! Moving to next question.');
 
                 // Automatically move to the next question/challenge based on flow
                 if (currentQuestion === 0) {
@@ -196,14 +215,8 @@ const Round2Page = () => {
             } else {
                 console.log('Answer incorrect, attempts left:', response.attemptsLeft);
 
-                if (response.attemptsLeft === 1) {
-                    // First attempt failed - show message but don't move
-                    alert('❌ Incorrect answer. You have 1 more attempt.');
-                } else if (response.attemptsLeft === 0) {
-                    // Second attempt failed - show message and move to next
-                    alert('❌ Incorrect answer. Maximum attempts reached. Moving to next question.');
-
-                    // Automatically move to the next question/challenge even if failed
+                if (response.attemptsLeft === 0) {
+                    // Second attempt failed - move to next question/challenge
                     if (currentQuestion === 0) {
                         // Q1 (aptitude) failed - move to Q2 (debug)
                         setCurrentChallenge('debug');
@@ -221,10 +234,16 @@ const Round2Page = () => {
 
             // Handle specific error cases
             if (error.message.includes('Question already completed')) {
-                alert('This question has already been completed. Please select an incomplete question.');
+                console.log('Question already completed, moving to next');
+                // Move to next challenge
+                const challengeMap = { 0: 'debug', 1: 'trace', 2: 'program' };
+                const nextChallenge = challengeMap[currentQuestion];
+                if (nextChallenge) {
+                    setCurrentChallenge(nextChallenge);
+                }
                 return;
             } else if (error.message.includes('Maximum attempts reached')) {
-                alert('Maximum attempts reached for this question. Moving to next challenge.');
+                console.log('Maximum attempts reached, moving to next challenge');
                 // Move to next challenge
                 const challengeMap = { 0: 'debug', 1: 'trace', 2: 'program' };
                 const nextChallenge = challengeMap[currentQuestion];
@@ -233,12 +252,12 @@ const Round2Page = () => {
                 }
                 return;
             } else if (error.message.includes('Team not found')) {
-                alert('Team not found. Please log in again.');
+                console.log('Team not found, redirecting to login');
                 navigate('/login');
                 return;
             }
 
-            alert(`Error submitting answer: ${error.message}`);
+            console.error(`Error submitting answer: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -284,21 +303,21 @@ const Round2Page = () => {
 
             // Handle specific error cases
             if (error.message.includes('Question already completed')) {
-                alert('This challenge has already been completed. Please select an incomplete challenge.');
+                console.log('Challenge already completed, moving to next');
                 return;
             } else if (error.message.includes('Question is locked')) {
-                alert('This challenge is locked. Complete the prerequisite aptitude question first.');
+                console.log('Challenge is locked, completing prerequisite first');
                 return;
             } else if (error.message.includes('Team not found')) {
-                alert('Team not found. Please log in again.');
+                console.log('Team not found, redirecting to login');
                 navigate('/login');
                 return;
             } else if (error.message.includes('Invalid challenge type')) {
-                alert('Invalid challenge type. Please try again.');
+                console.log('Invalid challenge type');
                 return;
             }
 
-            alert(`Error submitting code: ${error.message}`);
+            console.error(`Error submitting code: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -317,7 +336,6 @@ const Round2Page = () => {
 
         if (isCompletedInDB) {
             console.log(`Question ${questionKey} already completed in database, preventing selection`);
-            alert('This question has already been completed. Please select an incomplete question.');
             return;
         }
 
@@ -343,7 +361,6 @@ const Round2Page = () => {
 
         if (isCompletedInDB) {
             console.log(`Challenge ${challengeId} already completed in database, preventing selection`);
-            alert('This challenge has already been completed. Please select an incomplete challenge.');
             return;
         }
 
