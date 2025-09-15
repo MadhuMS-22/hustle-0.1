@@ -32,6 +32,16 @@ class Round3Service {
         }
     }
 
+    // Get team Round 3 progress
+    async getTeamRound3Progress(teamId) {
+        try {
+            const response = await apiService.get(`/round3/team/${teamId}/progress`);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     // Admin: Fetch all Round 3 results
     async fetchRound3Results() {
         try {

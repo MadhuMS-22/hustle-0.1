@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../../../services/api';
 import round2Service from '../../../services/round2Service';
+import SmartAutoSave from '../../../utils/smartAutoSave';
 
 const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const [code, setCode] = useState('');
@@ -11,6 +12,7 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const autoSaveTimeoutRef = useRef(null);
+    const smartAutoSave = useRef(new SmartAutoSave({ delay: 5000, minChanges: 2 }));
 
     // Fetch debug question from database
     useEffect(() => {
@@ -19,43 +21,17 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
                 setLoading(true);
                 const response = await round2Service.getCodingQuestion('debug');
                 console.log('Debug API Response:', response);
-                if (response && response.data) {
-                    console.log('Setting codeToDebug:', response.data.code);
-                    setCodeToDebug(response.data.code);
+                if (response && response.code) {
+                    console.log('Setting codeToDebug:', response.code);
+                    setCodeToDebug(response.code);
                 } else {
-                    // Fallback to hardcoded question if database fetch fails
-                    setCodeToDebug(`#include <stdio.h>
-
-int main() {
-    int arr[] = {1, 2, 3, 4, 5};
-    int sum = 0;
-    
-    for (int i = 0; i <= 5; i++) {
-        sum += arr[i];
-    }
-    
-    printf("Sum: %d\\n", sum);
-    return 0;
-}`);
+                    console.error('No code received from API');
+                    setError('Failed to load debug question from database');
                 }
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching debug question:', error);
-                setError('Failed to load debug question');
-                // Use fallback question
-                setCodeToDebug(`#include <stdio.h>
-
-int main() {
-    int arr[] = {1, 2, 3, 4, 5};
-    int sum = 0;
-    
-    for (int i = 0; i <= 5; i++) {
-        sum += arr[i];
-    }
-    
-    printf("Sum: %d\\n", sum);
-    return 0;
-}`);
+                setError('Failed to load debug question from database');
                 setLoading(false);
             }
         };
@@ -108,27 +84,17 @@ int main() {
         }
     };
 
-    // Auto-save on code change
+    // Smart auto-save on code change with optimized performance
     useEffect(() => {
-        if (autoSaveTimeoutRef.current) {
-            clearTimeout(autoSaveTimeoutRef.current);
+        if (code.trim() && code !== codeToDebug) {
+            smartAutoSave.current.triggerAutoSave(code, autoSave);
         }
-
-        autoSaveTimeoutRef.current = setTimeout(() => {
-            autoSave();
-        }, 2000); // Auto-save after 2 seconds of inactivity
-
-        return () => {
-            if (autoSaveTimeoutRef.current) {
-                clearTimeout(autoSaveTimeoutRef.current);
-            }
-        };
     }, [code]);
 
-    // Auto-save when timer ends
+    // Force auto-save when timer ends
     useEffect(() => {
         if (timeLeft === 0) {
-            autoSave();
+            smartAutoSave.current.forceSave(autoSave);
         }
     }, [timeLeft]);
 

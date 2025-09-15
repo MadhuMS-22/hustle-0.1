@@ -20,40 +20,18 @@ const Program = ({ onSubmit, teamId, isQuizStarted = true }) => {
                 setLoading(true);
                 const response = await round2Service.getCodingQuestion('program');
                 console.log('Program API Response:', response);
-                if (response && response.data) {
-                    console.log('Setting program data:', response.data);
-                    setProblemStatement(response.data.problemStatement);
-                    setSampleOutput(response.data.sampleOutput);
+                if (response && response.problemStatement) {
+                    console.log('Setting program data:', response);
+                    setProblemStatement(response.problemStatement);
+                    setSampleOutput(response.sampleOutput);
                 } else {
-                    // Fallback to hardcoded question if database fetch fails
-                    setProblemStatement(`Write a C program that:
-1. Takes a number n as input
-2. Prints the first n terms of the Fibonacci sequence
-3. Each term should be separated by a space
-
-Example:
-Input: 5
-Output: 0 1 1 2 3`);
-                    setSampleOutput(`Enter a number: 5
-Fibonacci sequence up to 5 terms:
-0 1 1 2 3`);
+                    console.error('No problem statement received from API');
+                    setError('Failed to load program question from database');
                 }
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching program question:', error);
-                setError('Failed to load program question');
-                // Use fallback question
-                setProblemStatement(`Write a C program that:
-1. Takes a number n as input
-2. Prints the first n terms of the Fibonacci sequence
-3. Each term should be separated by a space
-
-Example:
-Input: 5
-Output: 0 1 1 2 3`);
-                setSampleOutput(`Enter a number: 5
-Fibonacci sequence up to 5 terms:
-0 1 1 2 3`);
+                setError('Failed to load program question from database');
                 setLoading(false);
             }
         };
@@ -98,15 +76,18 @@ Fibonacci sequence up to 5 terms:
         }
     };
 
-    // Auto-save on code change
+    // Smart auto-save on code change with debouncing and change detection
     useEffect(() => {
         if (autoSaveTimeoutRef.current) {
             clearTimeout(autoSaveTimeoutRef.current);
         }
 
-        autoSaveTimeoutRef.current = setTimeout(() => {
-            autoSave();
-        }, 2000); // Auto-save after 2 seconds of inactivity
+        // Only auto-save if code has actually changed and is not empty
+        if (code.trim()) {
+            autoSaveTimeoutRef.current = setTimeout(() => {
+                autoSave();
+            }, 5000); // Increased to 5 seconds to reduce server load
+        }
 
         return () => {
             if (autoSaveTimeoutRef.current) {

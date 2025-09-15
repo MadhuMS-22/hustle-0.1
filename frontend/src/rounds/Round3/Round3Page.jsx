@@ -527,6 +527,8 @@ const Round3Page = () => {
   const [questionsData, setQuestionsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teamProgress, setTeamProgress] = useState(null);
+  const [showStateRecovery, setShowStateRecovery] = useState(false);
 
   const questions = questionsData?.questions || [];
 
@@ -556,15 +558,78 @@ const Round3Page = () => {
     fetchQuestions();
   }, []);
 
-  // Get team data from localStorage
+  // Get team data from localStorage and load progress
   useEffect(() => {
     const storedTeam = localStorage.getItem('hustle_team');
     if (storedTeam) {
       const teamData = JSON.parse(storedTeam);
       setTeamName(teamData.teamName || 'Unknown Team');
       setTeamId(teamData._id || '');
+
+      // Load team progress for state recovery
+      if (teamData._id) {
+        loadTeamProgress(teamData._id);
+      }
     }
   }, []);
+
+  // Load team progress for state recovery
+  const loadTeamProgress = async (teamId) => {
+    try {
+      console.log('🔄 Loading Round 3 team progress...');
+      const response = await round3Service.getTeamRound3Progress(teamId);
+      if (response && response.team) {
+        const team = response.team;
+        setTeamProgress(team);
+
+        // State Recovery: Restore frontend state based on backend progress
+        console.log('🔄 Restoring Round 3 state from backend progress...');
+
+        // Check if Round 3 was already completed
+        if (team.round3Completed) {
+          console.log('📊 Round 3 already completed, restoring state...');
+          setQuizComplete(true);
+          setTotalScore(team.round3Score);
+          setShowStateRecovery(true);
+
+          // Restore question order if available
+          if (team.round3QuestionOrderName) {
+            setQuestionOrder({ name: team.round3QuestionOrderName });
+          }
+
+          // Restore question results if available
+          if (team.round3QuestionResults && team.round3QuestionResults.length > 0) {
+            const restoredAnswers = {};
+            team.round3QuestionResults.forEach(result => {
+              const answerKey = `${result.questionIndex}-${result.blockIndex}`;
+              restoredAnswers[answerKey] = { code: result.selectedAnswer, isCorrect: result.isCorrect };
+            });
+            setSelectedAnswers(restoredAnswers);
+          }
+
+          // Restore question times if available
+          if (team.round3IndividualScores && team.round3IndividualScores.length > 0) {
+            const restoredTimes = {};
+            team.round3IndividualScores.forEach(score => {
+              restoredTimes[score.questionIndex] = score.timeTaken;
+            });
+            setQuestionTimes(restoredTimes);
+          }
+
+          console.log('✅ Round 3 state recovery completed');
+
+          // Auto-hide notification after 5 seconds
+          setTimeout(() => {
+            setShowStateRecovery(false);
+          }, 5000);
+        } else {
+          console.log('🆕 No previous Round 3 progress found, starting fresh');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading Round 3 team progress:', error);
+    }
+  };
 
   // Get question order and create ordered questions array
   const getQuestionOrder = () => {
@@ -923,6 +988,29 @@ const Round3Page = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 flex flex-col items-center justify-center">
+      {/* State Recovery Notification */}
+      {showStateRecovery && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-semibold">Round 3 Progress Restored!</p>
+            <p className="text-sm">Your Round 3 progress has been restored from where you left off.</p>
+          </div>
+          <button
+            onClick={() => setShowStateRecovery(false)}
+            className="flex-shrink-0 text-green-200 hover:text-white"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="w-full max-w-6xl p-8 bg-gray-800 rounded-xl shadow-lg">
         <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-4 text-indigo-400">
           Round 3: CODE RUSH

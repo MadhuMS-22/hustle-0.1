@@ -158,3 +158,38 @@ export const updateRound3Score = async (req, res) => {
         });
     }
 };
+
+// @desc    Get team Round 3 progress
+// @route   GET /api/round3/team/:teamId/progress
+// @access  Public
+export const getTeamRound3Progress = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+
+        const team = await Team.findById(teamId).select(
+            'teamName round3Score round3Time round3Program round3QuestionOrder round3QuestionOrderName round3QuestionResults round3IndividualScores round3Completed round3SubmittedAt competitionStatus'
+        );
+
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+
+        res.json({
+            team: {
+                teamName: team.teamName,
+                round3Score: team.round3Score,
+                round3Time: team.round3Time,
+                round3Program: team.round3Program,
+                round3QuestionOrder: team.round3QuestionOrder,
+                round3QuestionOrderName: team.round3QuestionOrderName,
+                round3QuestionResults: team.round3QuestionResults,
+                round3IndividualScores: team.round3IndividualScores,
+                round3Completed: team.round3Completed,
+                round3SubmittedAt: team.round3SubmittedAt,
+                competitionStatus: team.competitionStatus
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

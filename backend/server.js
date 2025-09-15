@@ -109,6 +109,41 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Direct Round 3 team progress route (fallback fix)
+app.get('/api/round3/team/:teamId/progress', async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        console.log('🔍 Round 3 progress request for team:', teamId);
+
+        const team = await Team.findById(teamId).select(
+            'teamName round3Score round3Time round3Program round3QuestionOrder round3QuestionOrderName round3QuestionResults round3IndividualScores round3Completed round3SubmittedAt competitionStatus'
+        );
+
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+
+        res.json({
+            team: {
+                teamName: team.teamName,
+                round3Score: team.round3Score,
+                round3Time: team.round3Time,
+                round3Program: team.round3Program,
+                round3QuestionOrder: team.round3QuestionOrder,
+                round3QuestionOrderName: team.round3QuestionOrderName,
+                round3QuestionResults: team.round3QuestionResults,
+                round3IndividualScores: team.round3IndividualScores,
+                round3Completed: team.round3Completed,
+                round3SubmittedAt: team.round3SubmittedAt,
+                competitionStatus: team.competitionStatus
+            }
+        });
+    } catch (error) {
+        console.error('❌ Round 3 progress error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // 404 handler
 app.use(notFound);
 

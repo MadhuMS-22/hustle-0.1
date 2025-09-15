@@ -26,6 +26,7 @@ const Round2Page = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isQuizStarted, setIsQuizStarted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showStateRecovery, setShowStateRecovery] = useState(false);
 
     // Check authentication and get team info
     useEffect(() => {
@@ -65,8 +66,88 @@ const Round2Page = () => {
             setIsLoading(true);
             const response = await apiService.get(`/quiz/team/${teamId}/progress`);
             if (response && response.team) {
-                setTeamProgress(response.team);
-                setIsQuizCompleted(response.team.isQuizCompleted || false);
+                const team = response.team;
+                setTeamProgress(team);
+                setIsQuizCompleted(team.isQuizCompleted || false);
+
+                // State Recovery: Restore frontend state based on backend progress
+                console.log('🔄 Restoring state from backend progress...');
+
+                // Check if quiz was already started (has any progress)
+                const hasAnyProgress = team.startTime || Object.values(team.completedQuestions).some(Boolean);
+                if (hasAnyProgress) {
+                    console.log('📊 Quiz already in progress, restoring state...');
+                    setIsQuizStarted(true);
+                    setShowStateRecovery(true);
+
+                    // Restore completed aptitude questions
+                    const completedAptitude = [];
+                    for (let i = 0; i < 3; i++) {
+                        const questionKey = `q${i + 1}`;
+                        if (team.completedQuestions[questionKey]) {
+                            completedAptitude.push(i);
+                        }
+                    }
+                    setCompletedAptitudeQuestions(completedAptitude);
+
+                    // Restore completed challenges
+                    const completedChallenges = [];
+                    const challengeMap = { 'q4': 'debug', 'q5': 'trace', 'q6': 'program' };
+                    Object.keys(challengeMap).forEach(qKey => {
+                        if (team.completedQuestions[qKey]) {
+                            completedChallenges.push(challengeMap[qKey]);
+                        }
+                    });
+                    setCompletedChallenges(completedChallenges);
+
+                    // Set current question to first incomplete aptitude question
+                    let firstIncompleteAptitude = -1;
+                    for (let i = 0; i < 3; i++) {
+                        const questionKey = `q${i + 1}`;
+                        if (team.unlockedQuestions[questionKey] && !team.completedQuestions[questionKey]) {
+                            firstIncompleteAptitude = i;
+                            break;
+                        }
+                    }
+
+                    if (firstIncompleteAptitude !== -1) {
+                        setCurrentQuestion(firstIncompleteAptitude);
+                        console.log(`📍 Restored to aptitude question ${firstIncompleteAptitude + 1}`);
+                    } else {
+                        // All aptitude questions completed, check for incomplete challenges
+                        let firstIncompleteChallenge = null;
+                        const challengeKeys = ['q4', 'q5', 'q6'];
+                        const challengeNames = ['debug', 'trace', 'program'];
+
+                        for (let i = 0; i < challengeKeys.length; i++) {
+                            const qKey = challengeKeys[i];
+                            if (team.unlockedQuestions[qKey] && !team.completedQuestions[qKey]) {
+                                firstIncompleteChallenge = challengeNames[i];
+                                break;
+                            }
+                        }
+
+                        if (firstIncompleteChallenge) {
+                            setCurrentChallenge(firstIncompleteChallenge);
+                            console.log(`📍 Restored to challenge: ${firstIncompleteChallenge}`);
+                        }
+                    }
+
+                    // Restore quiz start time if available
+                    if (team.startTime) {
+                        setQuizStartTime(new Date(team.startTime));
+                        console.log('⏰ Restored quiz start time');
+                    }
+
+                    console.log('✅ State recovery completed');
+
+                    // Auto-hide notification after 5 seconds
+                    setTimeout(() => {
+                        setShowStateRecovery(false);
+                    }, 5000);
+                } else {
+                    console.log('🆕 No previous progress found, starting fresh');
+                }
             }
         } catch (error) {
             console.error('Error loading team progress:', error);
@@ -92,6 +173,15 @@ const Round2Page = () => {
 
             if (!teamId) {
                 throw new Error('No team ID found. Please log in again.');
+            }
+
+            // Check if question is already completed
+            const questionKey = `q${currentQuestion + 1}`;
+            if (teamProgress?.completedQuestions?.[questionKey]) {
+                console.log(`Question ${questionKey} already completed, skipping submission`);
+                alert('This question has already been completed. Please select an incomplete question.');
+                setIsSubmitting(false);
+                return;
             }
 
             const response = await apiService.post("/quiz/apt/answer", { teamId, step: currentQuestion, selected });
@@ -210,6 +300,17 @@ const Round2Page = () => {
 
     const handleQuestionClick = (questionStep) => {
         console.log('Question clicked:', questionStep, 'Completed:', completedAptitudeQuestions);
+
+        // Check if question is completed in team progress
+        const questionKey = `q${questionStep + 1}`;
+        const isCompletedInDB = teamProgress?.completedQuestions?.[questionKey];
+
+        if (isCompletedInDB) {
+            console.log(`Question ${questionKey} already completed in database, preventing selection`);
+            alert('This question has already been completed. Please select an incomplete question.');
+            return;
+        }
+
         if (!completedAptitudeQuestions.includes(questionStep)) {
             setCurrentQuestion(questionStep);
             console.log('Setting current question to:', questionStep);
@@ -247,6 +348,29 @@ const Round2Page = () => {
 
     return (
         <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 font-sans antialiased text-white min-h-screen relative overflow-hidden">
+            {/* State Recovery Notification */}
+            {showStateRecovery && (
+                <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in">
+                    <div className="flex-shrink-0">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="font-semibold">Progress Restored!</p>
+                        <p className="text-sm">Your quiz progress has been restored from where you left off.</p>
+                    </div>
+                    <button
+                        onClick={() => setShowStateRecovery(false)}
+                        className="flex-shrink-0 text-green-200 hover:text-white"
+                    >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            )}
+
             <div className="flex h-screen">
                 {/* Navigation sidebar - only show when quiz has started */}
                 {isQuizStarted && (

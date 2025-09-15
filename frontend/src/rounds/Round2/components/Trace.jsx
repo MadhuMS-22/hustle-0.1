@@ -18,40 +18,16 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true }) => {
             try {
                 setLoading(true);
                 const response = await round2Service.getCodingQuestion('trace');
-                if (response && response.data) {
-                    setCodeToTrace(response.data.code);
+                if (response && response.code) {
+                    setCodeToTrace(response.code);
                 } else {
-                    // Fallback to hardcoded question if database fetch fails
-                    setCodeToTrace(`#include <stdio.h>
-
-int mystery(int n) {
-    if (n <= 1) return 1;
-    return n * mystery(n - 1);
-}
-
-int main() {
-    int result = mystery(4);
-    printf("Result: %d\\n", result);
-    return 0;
-}`);
+                    console.error('No code received from API');
+                    setError('Failed to load trace question from database');
                 }
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching trace question:', error);
-                setError('Failed to load trace question');
-                // Use fallback question
-                setCodeToTrace(`#include <stdio.h>
-
-int mystery(int n) {
-    if (n <= 1) return 1;
-    return n * mystery(n - 1);
-}
-
-int main() {
-    int result = mystery(4);
-    printf("Result: %d\\n", result);
-    return 0;
-}`);
+                setError('Failed to load trace question from database');
                 setLoading(false);
             }
         };
@@ -96,15 +72,18 @@ int main() {
         }
     };
 
-    // Auto-save on output change
+    // Smart auto-save on output change with debouncing and change detection
     useEffect(() => {
         if (autoSaveTimeoutRef.current) {
             clearTimeout(autoSaveTimeoutRef.current);
         }
 
-        autoSaveTimeoutRef.current = setTimeout(() => {
-            autoSave();
-        }, 2000); // Auto-save after 2 seconds of inactivity
+        // Only auto-save if output has actually changed and is not empty
+        if (output.trim() && output !== codeToTrace) {
+            autoSaveTimeoutRef.current = setTimeout(() => {
+                autoSave();
+            }, 5000); // Increased to 5 seconds to reduce server load
+        }
 
         return () => {
             if (autoSaveTimeoutRef.current) {

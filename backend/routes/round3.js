@@ -1,12 +1,15 @@
 // backend/routes/round3.js
 import express from 'express';
-import { submitRound3, getRound3Scores, getAllRound3Results, updateRound3Score } from '../controllers/round3Controller.js';
+import { submitRound3, getRound3Scores, getAllRound3Results, updateRound3Score, getTeamRound3Progress } from '../controllers/round3Controller.js';
 import { protect, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Auth required for submitting scores
 router.post("/submit", protect, submitRound3);
+
+// Get team Round 3 progress
+router.get("/team/:teamId/progress", getTeamRound3Progress);
 
 // Get all Round 3 scores (for admin dashboard)
 router.get("/scores", getRound3Scores);
