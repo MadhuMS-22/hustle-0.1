@@ -66,8 +66,10 @@ const Round2Page = () => {
 
             // Restore completed aptitude questions - OVERWRITE instead of append to prevent duplicates
             const completedAptitude = [];
+            // Map aptitude questions to correct question keys: step 0 = q1, step 1 = q3, step 2 = q5
+            const aptitudeQuestionMap = { 0: 'q1', 1: 'q3', 2: 'q5' };
             for (let i = 0; i < 3; i++) {
-                const questionKey = `q${i + 1}`;
+                const questionKey = aptitudeQuestionMap[i];
                 if (team.completedQuestions[questionKey]) {
                     completedAptitude.push(i);
                     console.log(`✅ Found completed aptitude question: ${questionKey} (step ${i})`);
@@ -202,7 +204,9 @@ const Round2Page = () => {
             }
 
             // Check if question is already completed
-            const questionKey = `q${currentQuestion + 1}`;
+            // Map aptitude steps to correct question keys: step 0 = q1, step 1 = q3, step 2 = q5
+            const aptitudeQuestionMap = { 0: 'q1', 1: 'q3', 2: 'q5' };
+            const questionKey = aptitudeQuestionMap[currentQuestion];
             if (teamProgress?.completedQuestions?.[questionKey]) {
                 console.log(`Question ${questionKey} already completed, moving to next`);
                 // Move to next challenge based on correct flow

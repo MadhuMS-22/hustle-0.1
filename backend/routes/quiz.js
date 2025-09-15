@@ -50,8 +50,11 @@ router.post('/apt/answer', async (req, res) => {
 
         const question = questions.aptitude[step];
 
-        const questionKey = `q${step + 1}`;
-        const attemptKey = `q${step + 1}`;
+        // Map aptitude steps to correct question numbers
+        // step 0 = Q1, step 1 = Q3, step 2 = Q5
+        const aptitudeQuestionMap = { 0: 'q1', 1: 'q3', 2: 'q5' };
+        const questionKey = aptitudeQuestionMap[step];
+        const attemptKey = aptitudeQuestionMap[step];
 
         // Check if already completed
         if (team.completedQuestions[questionKey]) {
