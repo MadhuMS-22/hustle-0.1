@@ -33,7 +33,9 @@ const readJsonFile = (filePath) => {
 
         const data = fs.readFileSync(fullPath, 'utf8');
         console.log(`Successfully read file: ${filePath}`);
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        console.log(`File content preview:`, Object.keys(parsed));
+        return parsed;
     } catch (error) {
         console.error(`Error reading file ${filePath}:`, error);
         return null;
@@ -45,7 +47,7 @@ const seedRound2Questions = async () => {
     try {
         console.log('🌱 Seeding Round 2 questions...');
 
-        const round2Data = readJsonFile('round2 (1).json');
+        const round2Data = readJsonFile('round2_updated.json');
         if (!round2Data) {
             console.error('❌ Failed to read Round 2 questions file');
             return;
@@ -77,7 +79,7 @@ const seedRound3Questions = async () => {
     try {
         console.log('🌱 Seeding Round 3 questions...');
 
-        const round3Data = readJsonFile('questions-1.json');
+        const round3Data = readJsonFile('questions-1_updated.json');
         if (!round3Data) {
             console.error('❌ Failed to read Round 3 questions file');
             return;

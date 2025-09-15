@@ -62,13 +62,9 @@ const AdminPage = ({ onGoBack }) => {
         const response = await round3Service.getRound3Questions();
         console.log('Questions response:', response);
 
-        if (response && response.data && response.data.data) {
-          setQuestionsData(response.data.data);
-          console.log('Questions loaded successfully:', response.data.data);
-        } else if (response && response.data) {
-          // Fallback: maybe the data is directly in response.data
+        if (response && response.data) {
           setQuestionsData(response.data);
-          console.log('Questions loaded successfully (fallback):', response.data);
+          console.log('Questions loaded successfully:', response.data);
         } else {
           console.error('Invalid response structure:', response);
           setError('Invalid questions data received');
@@ -542,13 +538,9 @@ const Round3Page = () => {
         const response = await round3Service.getRound3Questions();
         console.log('Questions response:', response);
 
-        if (response && response.data && response.data.data) {
-          setQuestionsData(response.data.data);
-          console.log('Questions loaded successfully:', response.data.data);
-        } else if (response && response.data) {
-          // Fallback: maybe the data is directly in response.data
+        if (response && response.data) {
           setQuestionsData(response.data);
-          console.log('Questions loaded successfully (fallback):', response.data);
+          console.log('Questions loaded successfully:', response.data);
         } else {
           console.error('Invalid response structure:', response);
           setError('Invalid questions data received');

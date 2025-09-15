@@ -7,7 +7,7 @@ import connectDB, { checkConnection, getConnectionStatus } from './config/databa
 
 // Load environment variables
 dotenv.config({ path: './config.env' });
-console.log('Environment loaded. MONGODB_URI:', process.env.MONGODB_URI);
+// Environment loaded
 
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
@@ -119,9 +119,6 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
-    console.log(`🏆 Competition endpoints: http://localhost:${PORT}/api/competition`);
 });
 
 // Handle unhandled promise rejections

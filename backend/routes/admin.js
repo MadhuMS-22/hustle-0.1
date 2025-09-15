@@ -369,7 +369,7 @@ const resetRoundCode = async (req, res) => {
 // @access  Private (Admin)
 const getRound2AdminData = async (req, res) => {
     try {
-        console.log('Getting Round 2 admin data...');
+        // Getting Round 2 admin data
 
         // Get all teams that have participated in Round 2
         const teams = await Team.find({
@@ -384,10 +384,7 @@ const getRound2AdminData = async (req, res) => {
             .select('-password')
             .sort({ totalScore: -1, totalTimeTaken: 1 });
 
-        console.log('Teams found:', teams.length);
-
         // Get all submissions for Round 2
-        console.log('Getting submissions...');
         const submissions = await Submission.find({
             $or: [
                 { questionType: 'aptitude' },
@@ -397,7 +394,7 @@ const getRound2AdminData = async (req, res) => {
             .populate('team', 'teamName members leader')
             .sort({ createdAt: -1 });
 
-        console.log('Submissions found:', submissions.length);
+        // Submissions processed
 
         // Calculate statistics
         const totalParticipants = teams.length;

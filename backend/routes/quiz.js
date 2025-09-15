@@ -137,6 +137,37 @@ router.post('/apt/answer', async (req, res) => {
     }
 });
 
+// Get coding question by type
+router.get('/code/:challengeType', async (req, res) => {
+    try {
+        const { challengeType } = req.params;
+
+        if (!['debug', 'trace', 'program'].includes(challengeType)) {
+            return res.status(400).json({ error: 'Invalid challenge type' });
+        }
+
+        const questions = await Round2Question.findOne({ round: 'Round2' });
+        if (!questions) {
+            return res.status(404).json({ error: 'Questions not found' });
+        }
+
+        const codingQuestion = questions.coding.find(q => q.challengeType === challengeType);
+        if (!codingQuestion) {
+            return res.status(404).json({ error: 'Coding question not found' });
+        }
+
+        res.json({
+            title: codingQuestion.title,
+            problemStatement: codingQuestion.problemStatement,
+            code: codingQuestion.code,
+            sampleOutput: codingQuestion.sampleOutput,
+            challengeType: codingQuestion.challengeType
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Submit coding solution
 router.post('/code/submit', async (req, res) => {
     try {
