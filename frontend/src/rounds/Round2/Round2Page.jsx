@@ -180,6 +180,7 @@ const Round2Page = () => {
             if (response.correct) {
                 setCompletedAptitudeQuestions(prev => [...prev, currentQuestion]);
                 console.log('Answer correct, marking question as completed');
+                alert('✅ Correct answer! Moving to next question.');
 
                 // Automatically move to the next question/challenge based on flow
                 if (currentQuestion === 0) {
@@ -194,7 +195,14 @@ const Round2Page = () => {
                 }
             } else {
                 console.log('Answer incorrect, attempts left:', response.attemptsLeft);
-                if (response.attemptsLeft === 0) {
+
+                if (response.attemptsLeft === 1) {
+                    // First attempt failed - show message but don't move
+                    alert('❌ Incorrect answer. You have 1 more attempt.');
+                } else if (response.attemptsLeft === 0) {
+                    // Second attempt failed - show message and move to next
+                    alert('❌ Incorrect answer. Maximum attempts reached. Moving to next question.');
+
                     // Automatically move to the next question/challenge even if failed
                     if (currentQuestion === 0) {
                         // Q1 (aptitude) failed - move to Q2 (debug)
@@ -327,6 +335,17 @@ const Round2Page = () => {
             'program': 2 // Q6 (program) unlocked by Q5 (aptitude step 2)
         };
         const requiredAptitude = challengeMap[challengeId];
+
+        // Check if challenge is already completed in database
+        const challengeKeyMap = { 'debug': 'q2', 'trace': 'q4', 'program': 'q6' };
+        const challengeKey = challengeKeyMap[challengeId];
+        const isCompletedInDB = teamProgress?.completedQuestions?.[challengeKey];
+
+        if (isCompletedInDB) {
+            console.log(`Challenge ${challengeId} already completed in database, preventing selection`);
+            alert('This challenge has already been completed. Please select an incomplete challenge.');
+            return;
+        }
 
         console.log('Challenge clicked:', challengeId, 'Required aptitude:', requiredAptitude, 'Completed aptitudes:', completedAptitudeQuestions, 'Completed challenges:', completedChallenges);
 

@@ -78,29 +78,31 @@ router.post('/apt/answer', async (req, res) => {
             // 2 points on first attempt, 1 point on second
             score = team.aptitudeAttempts[attemptKey] === 1 ? 2 : 1;
             team.completedQuestions[questionKey] = true;
-        } else {
-            // Still unlock next question even if failed
-            if (step === 0) { // Q1 completed - unlock Q4 (Debug)
+
+            // Only unlock next question if answered correctly
+            if (step === 0) { // Q1 (aptitude) completed - unlock Q2 (debug)
+                team.unlockedQuestions.q2 = true;
+            } else if (step === 1) { // Q3 (aptitude) completed - unlock Q4 (trace)
                 team.unlockedQuestions.q4 = true;
-            } else if (step === 1) { // Q2 completed - unlock Q5 (Trace)
-                team.unlockedQuestions.q5 = true;
-            } else if (step === 2) { // Q3 completed - unlock Q6 (Program)
+            } else if (step === 2) { // Q5 (aptitude) completed - unlock Q6 (program)
                 team.unlockedQuestions.q6 = true;
+            }
+        } else {
+            // If incorrect and no attempts left, still unlock next question
+            if (team.aptitudeAttempts[attemptKey] >= 2) {
+                if (step === 0) { // Q1 (aptitude) failed - unlock Q2 (debug)
+                    team.unlockedQuestions.q2 = true;
+                } else if (step === 1) { // Q3 (aptitude) failed - unlock Q4 (trace)
+                    team.unlockedQuestions.q4 = true;
+                } else if (step === 2) { // Q5 (aptitude) failed - unlock Q6 (program)
+                    team.unlockedQuestions.q6 = true;
+                }
             }
         }
 
         // Update scores
         team.scores[questionKey] = score;
         team.totalScore = Object.values(team.scores).reduce((sum, score) => sum + score, 0);
-
-        // Sequential unlocking: Aptitude → Debug → Aptitude → Trace → Aptitude → Program
-        if (step === 0) { // Q1 (aptitude) completed - unlock Q2 (debug)
-            team.unlockedQuestions.q2 = true;
-        } else if (step === 1) { // Q3 (aptitude) completed - unlock Q4 (trace)
-            team.unlockedQuestions.q4 = true;
-        } else if (step === 2) { // Q5 (aptitude) completed - unlock Q6 (program)
-            team.unlockedQuestions.q6 = true;
-        }
 
         await team.save();
 
