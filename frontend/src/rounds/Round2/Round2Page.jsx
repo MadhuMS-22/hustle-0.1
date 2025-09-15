@@ -103,7 +103,6 @@ const Round2Page = () => {
                     // Set current question/challenge based on new flow
                     const flowOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
                     const flowTypes = ['aptitude', 'challenge', 'aptitude', 'challenge', 'aptitude', 'challenge'];
-                    const challengeMap = { 'q2': 'debug', 'q4': 'trace', 'q6': 'program' };
 
                     let firstIncomplete = null;
                     for (let i = 0; i < flowOrder.length; i++) {
