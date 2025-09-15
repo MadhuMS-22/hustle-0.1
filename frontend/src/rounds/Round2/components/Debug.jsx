@@ -9,6 +9,7 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
     const [isRunning, setIsRunning] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [codeToDebug, setCodeToDebug] = useState('');
+    const [problemStatement, setProblemStatement] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const autoSaveTimeoutRef = useRef(null);
@@ -24,6 +25,7 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                 if (response && response.code) {
                     console.log('Setting codeToDebug:', response.code);
                     setCodeToDebug(response.code);
+                    setProblemStatement(response.problemStatement || 'Find and fix the bug in the following C code. The program should calculate the sum of array elements correctly. Look for the off-by-one error in the loop condition.');
                 } else {
                     console.error('No code received from API');
                     setError('Failed to load debug question from database');
@@ -201,8 +203,7 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                     <div className="glass rounded-xl p-3">
                         <h3 className="text-base font-bold text-white mb-2">Instructions:</h3>
                         <p className="text-gray-300 text-base leading-relaxed">
-                            Find and fix the bug in the following C code. The program should calculate the sum of array elements correctly.
-                            Look for the off-by-one error in the loop condition.
+                            {problemStatement}
                         </p>
                     </div>
                 </div>

@@ -8,6 +8,7 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
     const [isRunning, setIsRunning] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [codeToTrace, setCodeToTrace] = useState('');
+    const [problemStatement, setProblemStatement] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const autoSaveTimeoutRef = useRef(null);
@@ -20,6 +21,7 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                 const response = await round2Service.getCodingQuestion('trace');
                 if (response && response.code) {
                     setCodeToTrace(response.code);
+                    setProblemStatement(response.problemStatement || 'Trace through the following recursive function and determine what output it will produce. This is a factorial function - trace through the recursive calls step by step.');
                 } else {
                     console.error('No code received from API');
                     setError('Failed to load trace question from database');
@@ -224,8 +226,7 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
                     <div className="glass rounded-xl p-4">
                         <h3 className="text-lg font-bold text-white mb-2">Instructions:</h3>
                         <p className="text-gray-300 leading-relaxed text-sm">
-                            Trace through the following recursive function and determine what output it will produce.
-                            This is a factorial function - trace through the recursive calls step by step.
+                            {problemStatement}
                         </p>
                     </div>
                 </div>
