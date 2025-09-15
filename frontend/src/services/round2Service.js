@@ -68,8 +68,8 @@ const round2Service = {
     // Get specific coding question by challenge type
     getCodingQuestion: async (challengeType) => {
         try {
-            const response = await apiService.get(`/questions/round2/coding/${challengeType}`);
-            return response.data;
+            const response = await apiService.get(`/quiz/code/${challengeType}`);
+            return response;
         } catch (error) {
             console.error('Error fetching coding question:', error);
             throw error;

@@ -77,23 +77,8 @@ router.post('/apt/answer', async (req, res) => {
         if (correct) {
             // 2 points on first attempt, 1 point on second
             score = team.aptitudeAttempts[attemptKey] === 1 ? 2 : 1;
-            team.scores[questionKey] = score;
             team.completedQuestions[questionKey] = true;
-
-            // Sequential unlocking: Only unlock the immediate next question
-            if (step === 0) { // Q1 completed - unlock Q4 (Debug)
-                team.unlockedQuestions.q4 = true;
-            } else if (step === 1) { // Q2 completed - unlock Q5 (Trace)
-                team.unlockedQuestions.q5 = true;
-            } else if (step === 2) { // Q3 completed - unlock Q6 (Program)
-                team.unlockedQuestions.q6 = true;
-            }
-        } else if (team.aptitudeAttempts[attemptKey] === 2) {
-            // No score on a failed second attempt
-            score = 0;
-            team.scores[questionKey] = score;
-            team.completedQuestions[questionKey] = true;
-
+        } else {
             // Still unlock next question even if failed
             if (step === 0) { // Q1 completed - unlock Q4 (Debug)
                 team.unlockedQuestions.q4 = true;
@@ -104,8 +89,18 @@ router.post('/apt/answer', async (req, res) => {
             }
         }
 
-        // Update total score
+        // Update scores
+        team.scores[questionKey] = score;
         team.totalScore = Object.values(team.scores).reduce((sum, score) => sum + score, 0);
+
+        // Sequential unlocking: Only unlock the immediate next question
+        if (step === 0) { // Q1 completed - unlock Q4 (Debug)
+            team.unlockedQuestions.q4 = true;
+        } else if (step === 1) { // Q2 completed - unlock Q5 (Trace)
+            team.unlockedQuestions.q5 = true;
+        } else if (step === 2) { // Q3 completed - unlock Q6 (Program)
+            team.unlockedQuestions.q6 = true;
+        }
 
         await team.save();
 
@@ -355,9 +350,9 @@ router.get('/team/:teamId/progress', async (req, res) => {
                 totalTimeTaken: team.totalTimeTaken,
                 isQuizCompleted: team.isQuizCompleted,
                 totalScore: team.totalScore,
-                unlockedQuestions: team.unlockedQuestions,
-                completedQuestions: team.completedQuestions,
                 scores: team.scores,
+                completedQuestions: team.completedQuestions,
+                unlockedQuestions: team.unlockedQuestions,
                 aptitudeAttempts: team.aptitudeAttempts
             }
         });
