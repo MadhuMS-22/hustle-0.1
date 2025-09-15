@@ -170,6 +170,20 @@ router.post('/code/submit', async (req, res) => {
     try {
         const { teamId, challengeType, code, timeTaken, isAutoSave = false } = req.body;
 
+        console.log('Code submission received:', { teamId, challengeType, codeLength: code?.length, timeTaken, isAutoSave });
+
+        if (!teamId) {
+            return res.status(400).json({ error: 'Team ID is required' });
+        }
+
+        if (!challengeType) {
+            return res.status(400).json({ error: 'Challenge type is required' });
+        }
+
+        if (!code) {
+            return res.status(400).json({ error: 'Code is required' });
+        }
+
         const team = await Team.findById(teamId);
         if (!team) {
             return res.status(404).json({ error: 'Team not found' });
@@ -269,6 +283,7 @@ router.post('/code/submit', async (req, res) => {
             totalScore: team.totalScore
         });
     } catch (error) {
+        console.error('Code submission error:', error);
         res.status(500).json({ error: error.message });
     }
 });

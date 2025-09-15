@@ -194,9 +194,6 @@ const Round2Page = () => {
             const response = await apiService.post("/quiz/apt/answer", { teamId, step: currentQuestion, selected });
             console.log('Aptitude response:', response);
 
-            // Reload team progress to get updated state
-            await loadTeamProgress(teamId);
-
             if (response.correct) {
                 setCompletedAptitudeQuestions(prev => [...prev, currentQuestion]);
                 console.log('Answer correct, marking question as completed');
@@ -229,6 +226,9 @@ const Round2Page = () => {
                     }
                 }
             }
+
+            // Reload team progress to get updated state and refresh UI
+            await loadTeamProgress(teamId);
         } catch (error) {
             console.error('Error submitting aptitude answer:', error);
 
@@ -271,6 +271,7 @@ const Round2Page = () => {
                 throw new Error('No team ID found. Please log in again.');
             }
 
+            console.log('Submitting code with data:', { teamId, challengeType: currentChallenge, code: code?.substring(0, 100) + '...', timeTaken });
             const response = await apiService.post("/quiz/code/submit", { teamId, challengeType: currentChallenge, code, timeTaken });
 
             // Reload team progress to get updated state
