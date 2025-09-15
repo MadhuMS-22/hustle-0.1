@@ -515,7 +515,6 @@ const Round3Page = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [questionTimes, setQuestionTimes] = useState({});
   const [totalScore, setTotalScore] = useState(0);
-  const [timer, setTimer] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizComplete, setQuizComplete] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -529,7 +528,7 @@ const Round3Page = () => {
   const [error, setError] = useState(null);
   const [teamProgress, setTeamProgress] = useState(null);
   const [showStateRecovery, setShowStateRecovery] = useState(false);
-  const [globalTimeLeft, setGlobalTimeLeft] = useState(1200); // 20 minutes = 1200 seconds
+  const [globalTimeLeft, setGlobalTimeLeft] = useState(1500); // 25 minutes = 1500 seconds
   const [isGlobalTimerRunning, setIsGlobalTimerRunning] = useState(false);
 
   const questions = questionsData?.questions || [];
@@ -560,7 +559,7 @@ const Round3Page = () => {
     fetchQuestions();
   }, []);
 
-  // Global timer effect for Round 3 (20 minutes)
+  // Global timer effect for Round 3 (25 minutes)
   useEffect(() => {
     let interval = null;
 
@@ -695,27 +694,12 @@ const Round3Page = () => {
   // Maximum possible score (36 puzzle blocks total across all 5 questions)
   const maxPossibleScore = 36;
 
+  // Set start time when quiz starts
   useEffect(() => {
-    let interval = null;
-    if (quizStarted && !quizComplete && currentQuestion) {
-      setTimer(currentQuestion.timeLimit);
+    if (quizStarted && !quizComplete) {
       setStartTime(Date.now());
-
-      interval = setInterval(() => {
-        setTimer(prevTimer => {
-          if (prevTimer <= 1) {
-            clearInterval(interval);
-            // Auto-save incomplete quiz when timer expires
-            handleIncompleteQuiz();
-            handleNextQuestion();
-            return 0;
-          }
-          return prevTimer - 1;
-        });
-      }, 1000);
     }
-    return () => clearInterval(interval);
-  }, [quizStarted, quizComplete, currentQuestionIndex]);
+  }, [quizStarted, quizComplete]);
 
   // Auto-save when user tries to leave the page
   useEffect(() => {
@@ -755,7 +739,7 @@ const Round3Page = () => {
     setTotalScore(0);
     setFeedbackMessage('');
     setStartTime(Date.now());
-    setIsGlobalTimerRunning(true); // Start the global 20-minute timer
+    setIsGlobalTimerRunning(true); // Start the global 25-minute timer
   };
 
   const handleRound3Timeout = async () => {
@@ -787,7 +771,7 @@ const Round3Page = () => {
     }
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     // Check if all puzzle blocks in current question are answered
     const currentQuestion = orderedQuestionsList &&
       Array.isArray(orderedQuestionsList) &&
@@ -814,12 +798,21 @@ const Round3Page = () => {
       return;
     }
 
-    // Save time for current question
-    const timeTaken = currentQuestion.timeLimit - timer;
+    // Calculate time taken for current question (based on global timer)
+    const currentTime = Math.floor((Date.now() - startTime) / 1000);
+    const timeTaken = currentTime - (questionTimes[currentQuestionIndex] || 0);
     setQuestionTimes({
       ...questionTimes,
       [currentQuestionIndex]: timeTaken
     });
+
+    // Auto-save after each question submission
+    try {
+      await handleIncompleteQuiz();
+      console.log('✅ Auto-saved after question', currentQuestionIndex + 1);
+    } catch (error) {
+      console.error('Error auto-saving after question:', error);
+    }
 
     if (currentQuestionIndex < orderedQuestionsList.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -843,6 +836,7 @@ const Round3Page = () => {
     orderedQuestionsList.forEach((question, qIndex) => {
       let questionScore = 0;
       let questionTime = questionTimes[qIndex] || 0;
+      let isQuestionFullyAnswered = true;
 
       question.codeBlocks.forEach((block, bIndex) => {
         if (block.isPuzzle) {
@@ -850,9 +844,15 @@ const Round3Page = () => {
           const selectedAnswer = selectedAnswers[answerKey];
           const isCorrect = selectedAnswer && selectedAnswer.isCorrect;
 
-          if (isCorrect) {
+          // Only count score if question is fully answered
+          if (isCorrect && isQuestionFullyAnswered) {
             currentScore++;
             questionScore++;
+          }
+
+          // Check if all puzzle blocks in this question are answered
+          if (!selectedAnswer) {
+            isQuestionFullyAnswered = false;
           }
 
           questionResults.push({
@@ -871,10 +871,16 @@ const Round3Page = () => {
         }
       });
 
+      // Only count question score if fully answered
+      if (!isQuestionFullyAnswered) {
+        questionScore = 0;
+      }
+
       individualQuestionScores.push({
         questionIndex: qIndex,
         score: questionScore,
-        timeTaken: questionTime
+        timeTaken: questionTime,
+        fullyAnswered: isQuestionFullyAnswered
       });
     });
 
@@ -907,6 +913,7 @@ const Round3Page = () => {
     orderedQuestionsList.forEach((question, qIndex) => {
       let questionScore = 0;
       let questionTime = questionTimes[qIndex] || 0;
+      let isQuestionFullyAnswered = true;
 
       question.codeBlocks.forEach((block, bIndex) => {
         if (block.isPuzzle) {
@@ -914,9 +921,15 @@ const Round3Page = () => {
           const selectedAnswer = selectedAnswers[answerKey];
           const isCorrect = selectedAnswer && selectedAnswer.isCorrect;
 
-          if (isCorrect) {
+          // Only count score if question is fully answered
+          if (isCorrect && isQuestionFullyAnswered) {
             newScore++;
             questionScore++;
+          }
+
+          // Check if all puzzle blocks in this question are answered
+          if (!selectedAnswer) {
+            isQuestionFullyAnswered = false;
           }
 
           questionResults.push({
@@ -927,7 +940,6 @@ const Round3Page = () => {
             timeTaken: questionTime
           });
 
-
           if (selectedAnswer) {
             selectedProgram += selectedAnswer.code + '\n';
           }
@@ -936,10 +948,16 @@ const Round3Page = () => {
         }
       });
 
+      // Only count question score if fully answered
+      if (!isQuestionFullyAnswered) {
+        questionScore = 0;
+      }
+
       individualQuestionScores.push({
         questionIndex: qIndex,
         score: questionScore,
-        timeTaken: questionTime
+        timeTaken: questionTime,
+        fullyAnswered: isQuestionFullyAnswered
       });
     });
 
@@ -1045,10 +1063,10 @@ const Round3Page = () => {
 
       <div className="w-full max-w-6xl p-8 glass-dark rounded-xl shadow-2xl">
         <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-4 bg-gradient-to-r from-white via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">
-          Round 3: C-Matrix Code Rush
+          Round 3: Code Rush
         </h1>
         <p className="text-xl text-center mb-8 text-gray-300">
-          Complete 5 C programming puzzles. Each question has a 5-minute timer.
+          Complete 5 C programming puzzles. You have 25 minutes total to complete all questions.
         </p>
 
         {!quizStarted || !questionsData || !questionsData.questionOrders || !questionsData.questions ? (
@@ -1062,9 +1080,10 @@ const Round3Page = () => {
                 <h3 className="text-xl font-bold text-indigo-400 mb-4">Game Rules:</h3>
                 <ul className="text-left text-gray-300 space-y-2">
                   <li>• Complete 5 different C programming puzzles</li>
-                  <li>• Each question has a 5-minute time limit</li>
+                  <li>• You have 25 minutes total to complete all questions</li>
                   <li>• Select the correct code blocks to complete each program</li>
-                  <li>• Your progress and answers will be saved automatically</li>
+                  <li>• Your progress is auto-saved after each question submission</li>
+                  <li>• Only fully completed questions count toward your score</li>
                 </ul>
               </div>
             </div>
@@ -1076,7 +1095,7 @@ const Round3Page = () => {
                 <p className="text-red-400 mt-2">{feedbackMessage}</p>
               )}
             </div>
-            <p className="mb-4 text-xl">Ready to start? Each question has {formatTime(300)} to solve. Good luck!</p>
+            <p className="mb-4 text-xl">Ready to start? You have {formatTime(1500)} total to complete all questions. Good luck!</p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={handleStartQuiz}
@@ -1099,27 +1118,24 @@ const Round3Page = () => {
               <div className="text-2xl font-bold">
                 Question {currentQuestionIndex + 1} of {orderedQuestionsList ? orderedQuestionsList.length : 0}
               </div>
-              <div className="text-2xl font-bold">
-                Time Remaining: {formatTime(timer)}
+              {/* Global Round 3 Timer - moved to right side of question info */}
+              <div className="p-4 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl border border-purple-500/30 w-1/4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-purple-300">
+                    Round 3 Time Left:
+                  </span>
+                  <span className={`text-xl font-mono font-bold ${globalTimeLeft < 300 ? 'text-red-400 animate-pulse' : 'text-purple-300'}`}>
+                    {formatTime(globalTimeLeft)}
+                  </span>
+                </div>
+                {globalTimeLeft < 300 && (
+                  <div className="text-red-300 text-xs mt-2 text-center">
+                    ⚠️ Round 3 will auto-complete when time runs out!
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Global Round 3 Timer */}
-            <div className="mb-4 p-4 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl border border-purple-500/30">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-purple-300">
-                  Round 3 Time Left:
-                </span>
-                <span className={`text-xl font-mono font-bold ${globalTimeLeft < 300 ? 'text-red-400 animate-pulse' : 'text-purple-300'}`}>
-                  {formatTime(globalTimeLeft)}
-                </span>
-              </div>
-              {globalTimeLeft < 300 && (
-                <div className="text-red-300 text-xs mt-2 text-center">
-                  ⚠️ Round 3 will auto-complete when time runs out!
-                </div>
-              )}
-            </div>
 
             {/* Progress Indicator */}
             <div className="mb-6">
@@ -1176,18 +1192,12 @@ const Round3Page = () => {
               >
                 Next Question
               </button>
-              <button
-                onClick={handleQuizCompletion}
-                className="bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 shadow-xl"
-              >
-                Finish Quiz
-              </button>
             </div>
 
             {/* Auto-save warning */}
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-400">
-                💾 Your progress is automatically saved. If you don't finish, your current answers will be recorded.
+                💾 Your progress is auto-saved after each question. Only fully completed questions count toward your score.
               </p>
             </div>
           </>
@@ -1201,10 +1211,10 @@ const Round3Page = () => {
               </p>
               <div className="bg-green-800 border border-green-600 rounded-lg p-4 mb-6">
                 <p className="text-green-200 font-semibold">
-                  🎉 Your quiz has been successfully submitted and saved to the database.
+                  🎉 Your quiz has been successfully submitted.
                 </p>
                 <p className="text-green-300 text-sm mt-2">
-                  Results will be available on the admin dashboard.
+                  Results will be available soon.
                 </p>
               </div>
               <div className="flex justify-center gap-4">
