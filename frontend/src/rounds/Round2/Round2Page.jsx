@@ -27,6 +27,8 @@ const Round2Page = () => {
     const [isQuizStarted, setIsQuizStarted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showStateRecovery, setShowStateRecovery] = useState(false);
+    const [globalTimeLeft, setGlobalTimeLeft] = useState(2700); // 45 minutes = 2700 seconds
+    const [isGlobalTimerRunning, setIsGlobalTimerRunning] = useState(false);
 
     // Check authentication and get team info
     useEffect(() => {
@@ -53,6 +55,21 @@ const Round2Page = () => {
         }
     }, [navigate]);
 
+    // Global timer effect for Round 2 (45 minutes)
+    useEffect(() => {
+        let interval = null;
+
+        if (isGlobalTimerRunning && globalTimeLeft > 0) {
+            interval = setInterval(() => {
+                setGlobalTimeLeft(time => time - 1);
+            }, 1000);
+        } else if (globalTimeLeft === 0 && isQuizStarted && !isQuizCompleted) {
+            // Round 2 time expired - auto-complete and save progress
+            handleRound2Timeout();
+        }
+
+        return () => clearInterval(interval);
+    }, [isGlobalTimerRunning, globalTimeLeft, isQuizStarted, isQuizCompleted]);
 
     // Removed duplicate loadTeamProgress call - already called in first useEffect
 
@@ -187,9 +204,31 @@ const Round2Page = () => {
     const handleStartRound2 = () => {
         setIsQuizStarted(true);
         setQuizStartTime(new Date()); // Start the timer when user clicks Start
+        setIsGlobalTimerRunning(true); // Start the global 45-minute timer
         // Set the first question as current
         if (teamProgress?.unlockedQuestions.q1) {
             setCurrentQuestion(0);
+        }
+    };
+
+    const handleRound2Timeout = async () => {
+        console.log('⏰ Round 2 time expired! Auto-completing and saving progress...');
+        setIsGlobalTimerRunning(false);
+        setIsQuizCompleted(true);
+
+        try {
+            // Auto-save current progress
+            if (teamId) {
+                // Force save any current work
+                await apiService.post('/quiz/team/autosave', {
+                    teamId,
+                    isQuizCompleted: true,
+                    endTime: new Date(),
+                    totalTimeTaken: 2700 // 45 minutes
+                });
+            }
+        } catch (error) {
+            console.error('Error auto-saving on timeout:', error);
         }
     };
 
@@ -231,6 +270,12 @@ const Round2Page = () => {
             // Let backend state restoration handle all state updates to prevent race conditions
             if (updatedProgress) {
                 console.log('🔄 Restoring state from backend after aptitude submission...');
+                console.log('📊 Updated progress:', {
+                    completedQuestions: updatedProgress.completedQuestions,
+                    unlockedQuestions: updatedProgress.unlockedQuestions,
+                    currentQuestion,
+                    currentChallenge
+                });
                 restoreQuizState(updatedProgress);
             }
         } catch (error) {
@@ -460,7 +505,12 @@ const Round2Page = () => {
                             </div>
                         </div>
 
-                        <GlobalTimer startTime={quizStartTime} isActive={!!teamId && !isQuizCompleted} />
+                        <GlobalTimer
+                            startTime={quizStartTime}
+                            isActive={!!teamId && !isQuizCompleted}
+                            timeLeft={globalTimeLeft}
+                            totalTime={2700}
+                        />
 
                         <div className="space-y-3">
                             <h4 className="text-sm font-semibold text-purple-300 uppercase tracking-wide">Quiz Questions</h4>
@@ -553,14 +603,20 @@ const Round2Page = () => {
                                     Round 2 Completed!
                                 </h2>
                                 <p className="text-xl text-gray-300 mb-8">
-                                    Congratulations! You have successfully completed all challenges.
+                                    {globalTimeLeft === 0 ?
+                                        "Time's up! Your progress has been automatically saved." :
+                                        "Congratulations! You have successfully completed all challenges."
+                                    }
                                 </p>
                                 <div className="glass-dark rounded-3xl p-8 max-w-md mx-auto shadow-2xl">
                                     <p className="text-gray-300 text-lg mb-4">
                                         Thank you for participating in Round 2!
                                     </p>
                                     <div className="text-purple-300 font-semibold mb-4">
-                                        All challenges completed successfully!
+                                        {globalTimeLeft === 0 ?
+                                            "Progress saved successfully!" :
+                                            "All challenges completed successfully!"
+                                        }
                                     </div>
                                     <div className="text-gray-400 text-sm mb-6">
                                         Your responses have been submitted and recorded. You will be redirected to the team page shortly.

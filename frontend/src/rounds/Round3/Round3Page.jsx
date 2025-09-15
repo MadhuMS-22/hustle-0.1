@@ -529,6 +529,8 @@ const Round3Page = () => {
   const [error, setError] = useState(null);
   const [teamProgress, setTeamProgress] = useState(null);
   const [showStateRecovery, setShowStateRecovery] = useState(false);
+  const [globalTimeLeft, setGlobalTimeLeft] = useState(1200); // 20 minutes = 1200 seconds
+  const [isGlobalTimerRunning, setIsGlobalTimerRunning] = useState(false);
 
   const questions = questionsData?.questions || [];
 
@@ -557,6 +559,22 @@ const Round3Page = () => {
 
     fetchQuestions();
   }, []);
+
+  // Global timer effect for Round 3 (20 minutes)
+  useEffect(() => {
+    let interval = null;
+
+    if (isGlobalTimerRunning && globalTimeLeft > 0) {
+      interval = setInterval(() => {
+        setGlobalTimeLeft(time => time - 1);
+      }, 1000);
+    } else if (globalTimeLeft === 0 && quizStarted && !quizComplete) {
+      // Round 3 time expired - auto-complete and save progress
+      handleRound3Timeout();
+    }
+
+    return () => clearInterval(interval);
+  }, [isGlobalTimerRunning, globalTimeLeft, quizStarted, quizComplete]);
 
   // Get team data from localStorage and load progress
   useEffect(() => {
@@ -737,6 +755,20 @@ const Round3Page = () => {
     setTotalScore(0);
     setFeedbackMessage('');
     setStartTime(Date.now());
+    setIsGlobalTimerRunning(true); // Start the global 20-minute timer
+  };
+
+  const handleRound3Timeout = async () => {
+    console.log('⏰ Round 3 time expired! Auto-completing and saving progress...');
+    setIsGlobalTimerRunning(false);
+    setQuizComplete(true);
+
+    try {
+      // Auto-save current progress
+      await handleIncompleteQuiz();
+    } catch (error) {
+      console.error('Error auto-saving Round 3 on timeout:', error);
+    }
   };
 
   const handleAnswerClick = (questionIndex, blockIndex, option) => {
@@ -1070,6 +1102,23 @@ const Round3Page = () => {
               <div className="text-2xl font-bold">
                 Time Remaining: {formatTime(timer)}
               </div>
+            </div>
+
+            {/* Global Round 3 Timer */}
+            <div className="mb-4 p-4 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl border border-purple-500/30">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-purple-300">
+                  Round 3 Time Left:
+                </span>
+                <span className={`text-xl font-mono font-bold ${globalTimeLeft < 300 ? 'text-red-400 animate-pulse' : 'text-purple-300'}`}>
+                  {formatTime(globalTimeLeft)}
+                </span>
+              </div>
+              {globalTimeLeft < 300 && (
+                <div className="text-red-300 text-xs mt-2 text-center">
+                  ⚠️ Round 3 will auto-complete when time runs out!
+                </div>
+              )}
             </div>
 
             {/* Progress Indicator */}

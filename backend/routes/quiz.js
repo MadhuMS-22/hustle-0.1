@@ -61,7 +61,7 @@ router.post('/apt/answer', async (req, res) => {
             return res.status(400).json({ error: 'Question already completed' });
         }
 
-        // Check attempt limit
+        // Check attempt limit - allow up to 2 attempts (0-indexed, so 2 means 3rd attempt)
         if (team.aptitudeAttempts[attemptKey] >= 2) {
             return res.status(400).json({ error: 'Maximum attempts reached for this question' });
         }
@@ -91,14 +91,22 @@ router.post('/apt/answer', async (req, res) => {
                 team.unlockedQuestions.q6 = true;
             }
         } else {
-            // If incorrect and no attempts left, still unlock next question
+            // If incorrect and no attempts left, still unlock next question and mark as completed
+            console.log(`❌ Incorrect answer for ${questionKey}, attempts: ${team.aptitudeAttempts[attemptKey]}`);
             if (team.aptitudeAttempts[attemptKey] >= 2) {
+                console.log(`🔓 Max attempts reached for ${questionKey}, unlocking next question and marking as completed`);
+                // Mark the question as completed even if failed (to prevent getting stuck)
+                team.completedQuestions[questionKey] = true;
+
                 if (step === 0) { // Q1 (aptitude) failed - unlock Q2 (debug)
                     team.unlockedQuestions.q2 = true;
+                    console.log('🔓 Unlocked Q2 (debug)');
                 } else if (step === 1) { // Q3 (aptitude) failed - unlock Q4 (trace)
                     team.unlockedQuestions.q4 = true;
+                    console.log('🔓 Unlocked Q4 (trace)');
                 } else if (step === 2) { // Q5 (aptitude) failed - unlock Q6 (program)
                     team.unlockedQuestions.q6 = true;
+                    console.log('🔓 Unlocked Q6 (program)');
                 }
             }
         }

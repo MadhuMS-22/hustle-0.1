@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const GlobalTimer = ({ startTime, isActive }) => {
+const GlobalTimer = ({ startTime, isActive, timeLeft, totalTime = 2700 }) => {
     const [elapsedTime, setElapsedTime] = useState(0);
 
     useEffect(() => {
@@ -39,12 +39,17 @@ const GlobalTimer = ({ startTime, isActive }) => {
         <div className="glass rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-purple-300">
-                    {isActive ? 'Quiz Time:' : 'Final Time:'}
+                    {isActive ? 'Round 2 Time Left:' : 'Final Time:'}
                 </span>
-                <span className={`text-xl font-mono font-bold ${isActive ? 'text-purple-300' : 'text-green-400'}`}>
-                    {formatTime(elapsedTime)}
+                <span className={`text-xl font-mono font-bold ${isActive ? (timeLeft < 300 ? 'text-red-400 animate-pulse' : 'text-purple-300') : 'text-green-400'}`}>
+                    {isActive && timeLeft !== undefined ? formatTime(timeLeft) : formatTime(elapsedTime)}
                 </span>
             </div>
+            {isActive && timeLeft !== undefined && timeLeft < 300 && (
+                <div className="text-red-300 text-xs mt-2 text-center">
+                    ⚠️ Round 2 will auto-complete when time runs out!
+                </div>
+            )}
         </div>
     );
 };
