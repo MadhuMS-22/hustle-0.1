@@ -54,53 +54,70 @@ const Round2Page = () => {
     }, [navigate]);
 
 
-    useEffect(() => {
-        // Load team progress to check if quiz has already started/completed
-        if (teamId) {
-            loadTeamProgress(teamId);
-        }
-    }, [teamId]);
+    // Removed duplicate loadTeamProgress call - already called in first useEffect
 
     // Simplified state recovery function
     const restoreQuizState = (team) => {
         try {
-            // Restore completed aptitude questions
+            console.log('🔄 restoreQuizState called with team:', {
+                completedQuestions: team.completedQuestions,
+                unlockedQuestions: team.unlockedQuestions
+            });
+
+            // Restore completed aptitude questions - OVERWRITE instead of append to prevent duplicates
             const completedAptitude = [];
             for (let i = 0; i < 3; i++) {
                 const questionKey = `q${i + 1}`;
                 if (team.completedQuestions[questionKey]) {
                     completedAptitude.push(i);
+                    console.log(`✅ Found completed aptitude question: ${questionKey} (step ${i})`);
                 }
             }
+            console.log('📝 Setting completedAptitudeQuestions to:', completedAptitude);
             setCompletedAptitudeQuestions(completedAptitude);
 
-            // Restore completed challenges
+            // Restore completed challenges - OVERWRITE instead of append to prevent duplicates
             const completedChallenges = [];
             const challengeMap = { 'q2': 'debug', 'q4': 'trace', 'q6': 'program' };
             Object.keys(challengeMap).forEach(qKey => {
                 if (team.completedQuestions[qKey]) {
                     completedChallenges.push(challengeMap[qKey]);
+                    console.log(`✅ Found completed challenge: ${qKey} (${challengeMap[qKey]})`);
                 }
             });
+            console.log('🎯 Setting completedChallenges to:', completedChallenges);
             setCompletedChallenges(completedChallenges);
+
+            // Check if all questions are completed - auto-complete quiz
+            const flowOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
+            const allCompleted = flowOrder.every(qKey => team.completedQuestions[qKey]);
+            if (allCompleted) {
+                console.log('🎉 All questions completed, marking quiz as completed');
+                setIsQuizCompleted(true);
+                return;
+            }
 
             // Find next incomplete question/challenge
             // Flow: Q1 (aptitude) -> Q2 (debug) -> Q3 (aptitude) -> Q4 (trace) -> Q5 (aptitude) -> Q6 (program)
-            const flowOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
             const flowTypes = ['aptitude', 'challenge', 'aptitude', 'challenge', 'aptitude', 'challenge'];
 
+            console.log('🔍 Looking for next incomplete question/challenge...');
             for (let i = 0; i < flowOrder.length; i++) {
                 const qKey = flowOrder[i];
-                if (team.unlockedQuestions[qKey] && !team.completedQuestions[qKey]) {
+                const isUnlocked = team.unlockedQuestions[qKey];
+                const isCompleted = team.completedQuestions[qKey];
+                console.log(`  ${qKey}: unlocked=${isUnlocked}, completed=${isCompleted}`);
+
+                if (isUnlocked && !isCompleted) {
                     if (flowTypes[i] === 'aptitude') {
                         const aptitudeStep = qKey === 'q1' ? 0 : qKey === 'q3' ? 1 : 2;
                         setCurrentQuestion(aptitudeStep);
-                        setCurrentChallenge(null); // Clear any challenge
-                        console.log(`📍 Restored to aptitude question ${aptitudeStep + 1}`);
+                        setCurrentChallenge(undefined); // Use undefined instead of null
+                        console.log(`📍 Restored to aptitude question ${aptitudeStep + 1} (${qKey})`);
                     } else {
                         setCurrentChallenge(challengeMap[qKey]);
-                        setCurrentQuestion(null); // Clear any question
-                        console.log(`📍 Restored to challenge: ${challengeMap[qKey]}`);
+                        setCurrentQuestion(undefined); // Use undefined instead of null
+                        console.log(`📍 Restored to challenge: ${challengeMap[qKey]} (${qKey})`);
                     }
                     break;
                 }
@@ -109,7 +126,7 @@ const Round2Page = () => {
             console.error('Error in state recovery:', error);
             // Fallback: start from beginning
             setCurrentQuestion(0);
-            setCurrentChallenge(null);
+            setCurrentChallenge(undefined);
         }
     };
 
@@ -119,6 +136,11 @@ const Round2Page = () => {
             const response = await apiService.get(`/quiz/team/${teamId}/progress`);
             if (response && response.team) {
                 const team = response.team;
+                console.log('📊 Team progress received:', {
+                    completedQuestions: team.completedQuestions,
+                    unlockedQuestions: team.unlockedQuestions,
+                    aptitudeAttempts: team.aptitudeAttempts
+                });
                 setTeamProgress(team);
                 setIsQuizCompleted(team.isQuizCompleted || false);
 
@@ -150,6 +172,8 @@ const Round2Page = () => {
                 } else {
                     console.log('🆕 No previous progress found, starting fresh');
                 }
+
+                return team; // Return the team data
             }
         } catch (error) {
             console.error('Error loading team progress:', error);
@@ -181,7 +205,8 @@ const Round2Page = () => {
             const questionKey = `q${currentQuestion + 1}`;
             if (teamProgress?.completedQuestions?.[questionKey]) {
                 console.log(`Question ${questionKey} already completed, moving to next`);
-                // Move to next challenge
+                // Move to next challenge based on correct flow
+                // Q1 (step 0) → Q2 (debug), Q3 (step 1) → Q4 (trace), Q5 (step 2) → Q6 (program)
                 const challengeMap = { 0: 'debug', 1: 'trace', 2: 'program' };
                 const nextChallenge = challengeMap[currentQuestion];
                 if (nextChallenge) {
@@ -194,41 +219,16 @@ const Round2Page = () => {
             const response = await apiService.post("/quiz/apt/answer", { teamId, step: currentQuestion, selected });
             console.log('Aptitude response:', response);
 
-            if (response.correct) {
-                setCompletedAptitudeQuestions(prev => [...prev, currentQuestion]);
-                console.log('Answer correct, marking question as completed');
-
-                // Automatically move to the next question/challenge based on flow
-                if (currentQuestion === 0) {
-                    // Q1 (aptitude) completed - move to Q2 (debug)
-                    setCurrentChallenge('debug');
-                } else if (currentQuestion === 1) {
-                    // Q3 (aptitude) completed - move to Q4 (trace)
-                    setCurrentChallenge('trace');
-                } else if (currentQuestion === 2) {
-                    // Q5 (aptitude) completed - move to Q6 (program)
-                    setCurrentChallenge('program');
-                }
-            } else {
-                console.log('Answer incorrect, attempts left:', response.attemptsLeft);
-
-                if (response.attemptsLeft === 0) {
-                    // Second attempt failed - move to next question/challenge
-                    if (currentQuestion === 0) {
-                        // Q1 (aptitude) failed - move to Q2 (debug)
-                        setCurrentChallenge('debug');
-                    } else if (currentQuestion === 1) {
-                        // Q3 (aptitude) failed - move to Q4 (trace)
-                        setCurrentChallenge('trace');
-                    } else if (currentQuestion === 2) {
-                        // Q5 (aptitude) failed - move to Q6 (program)
-                        setCurrentChallenge('program');
-                    }
-                }
-            }
-
             // Reload team progress to get updated state and refresh UI
-            await loadTeamProgress(teamId);
+            console.log('Reloading team progress after aptitude submission...');
+            const updatedProgress = await loadTeamProgress(teamId);
+            console.log('Team progress reloaded, current state:', { completedAptitudeQuestions, currentQuestion, currentChallenge });
+
+            // Let backend state restoration handle all state updates to prevent race conditions
+            if (updatedProgress) {
+                console.log('🔄 Restoring state from backend after aptitude submission...');
+                restoreQuizState(updatedProgress);
+            }
         } catch (error) {
             console.error('Error submitting aptitude answer:', error);
 
@@ -271,14 +271,46 @@ const Round2Page = () => {
                 throw new Error('No team ID found. Please log in again.');
             }
 
-            console.log('Submitting code with data:', { teamId, challengeType: currentChallenge, code: code?.substring(0, 100) + '...', timeTaken });
+            console.log('handleCodeSubmit called with currentChallenge:', currentChallenge, 'teamId:', teamId);
+            console.log('Current team progress:', {
+                unlockedQuestions: teamProgress?.unlockedQuestions,
+                completedQuestions: teamProgress?.completedQuestions,
+                currentChallenge,
+                q4Unlocked: teamProgress?.unlockedQuestions?.q4,
+                q3Completed: teamProgress?.completedQuestions?.q3
+            });
+
+            // Check if the challenge is unlocked before attempting submission
+            const challengeKeyMap = { 'debug': 'q2', 'trace': 'q4', 'program': 'q6' };
+            const challengeKey = challengeKeyMap[currentChallenge];
+            if (challengeKey && !teamProgress?.unlockedQuestions?.[challengeKey]) {
+                console.log(`Challenge ${currentChallenge} (${challengeKey}) is locked, preventing submission`);
+                alert(`This challenge is locked. Please complete the prerequisite questions first.`);
+                setIsSubmitting(false);
+                return;
+            }
+
+            console.log('Submitting code with data:', {
+                teamId,
+                challengeType: currentChallenge,
+                code: code?.substring(0, 100) + '...',
+                timeTaken,
+                codeType: typeof code,
+                codeIsEmpty: !code || code.trim() === '',
+                timeTakenType: typeof timeTaken,
+                timeTakenValue: timeTaken
+            });
             const response = await apiService.post("/quiz/code/submit", { teamId, challengeType: currentChallenge, code, timeTaken });
 
             // Reload team progress to get updated state
-            await loadTeamProgress(teamId);
+            const updatedTeam = await loadTeamProgress(teamId);
+            console.log('Code submission completed, team progress updated:', updatedTeam);
 
-            setCompletedChallenges(prev => [...prev, currentChallenge]);
-            setCurrentChallenge(null);
+            // Let backend state restoration handle all state updates to prevent race conditions
+            if (updatedTeam) {
+                console.log('🔄 Restoring state from backend after code submission...');
+                restoreQuizState(updatedTeam);
+            }
 
             if (response.isQuizCompleted) {
                 setIsQuizCompleted(true);
@@ -286,18 +318,6 @@ const Round2Page = () => {
                 setTimeout(() => {
                     navigate('/team');
                 }, 2000); // Give user 2 seconds to see completion message
-            } else {
-                // Automatically move to the next aptitude question after coding challenge
-                if (currentChallenge === 'debug') {
-                    // Q2 (debug) completed - move to Q3 (aptitude)
-                    setCurrentQuestion(1);
-                } else if (currentChallenge === 'trace') {
-                    // Q4 (trace) completed - move to Q5 (aptitude)
-                    setCurrentQuestion(2);
-                } else if (currentChallenge === 'program') {
-                    // Q6 (program) completed - quiz is done
-                    setIsQuizCompleted(true);
-                }
             }
         } catch (error) {
             console.error('Error submitting code:', error);
@@ -308,6 +328,7 @@ const Round2Page = () => {
                 return;
             } else if (error.message.includes('Question is locked')) {
                 console.log('Challenge is locked, completing prerequisite first');
+                alert('This challenge is locked. Please complete the prerequisite aptitude question first.');
                 return;
             } else if (error.message.includes('Team not found')) {
                 console.log('Team not found, redirecting to login');
@@ -316,9 +337,18 @@ const Round2Page = () => {
             } else if (error.message.includes('Invalid challenge type')) {
                 console.log('Invalid challenge type');
                 return;
+            } else if (error.message.includes('Code is required and cannot be empty')) {
+                console.log('Code is empty');
+                alert('Please enter your trace output before submitting.');
+                return;
+            } else if (error.message.includes('Time taken must be a valid number')) {
+                console.log('Invalid time taken');
+                alert('There was an issue with the timer. Please try again.');
+                return;
             }
 
             console.error(`Error submitting code: ${error.message}`);
+            alert(`Error submitting code: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -365,11 +395,16 @@ const Round2Page = () => {
             return;
         }
 
-        console.log('Challenge clicked:', challengeId, 'Required aptitude:', requiredAptitude, 'Completed aptitudes:', completedAptitudeQuestions, 'Completed challenges:', completedChallenges);
+        // Use backend unlockedQuestions as single source of truth for challenge unlocking
+        const isUnlocked = teamProgress?.unlockedQuestions?.[challengeKey];
 
-        if (completedAptitudeQuestions.includes(requiredAptitude) && !completedChallenges.includes(challengeId)) {
+        console.log('Challenge clicked:', challengeId, 'Required aptitude:', requiredAptitude, 'Backend unlocked:', isUnlocked, 'Completed challenges:', completedChallenges);
+
+        if (isUnlocked && !completedChallenges.includes(challengeId)) {
             setCurrentChallenge(challengeId);
             console.log('Setting current challenge to:', challengeId);
+        } else if (!isUnlocked) {
+            console.log(`Challenge ${challengeId} is locked according to backend`);
         }
     };
 
@@ -500,11 +535,11 @@ const Round2Page = () => {
                         <ChallengeSelection onStart={handleStartRound2} teamProgress={teamProgress} />
                     ) : currentChallenge ? (
                         currentChallenge === 'debug' ? (
-                            <Debug onSubmit={handleCodeSubmit} teamId={teamId} isQuizStarted={isQuizStarted} />
+                            <Debug onSubmit={handleCodeSubmit} teamId={teamId} isQuizStarted={isQuizStarted} teamProgress={teamProgress} />
                         ) : currentChallenge === 'trace' ? (
-                            <Trace onSubmit={handleCodeSubmit} teamId={teamId} isQuizStarted={isQuizStarted} />
+                            <Trace onSubmit={handleCodeSubmit} teamId={teamId} isQuizStarted={isQuizStarted} teamProgress={teamProgress} />
                         ) : currentChallenge === 'program' ? (
-                            <Program onSubmit={handleCodeSubmit} teamId={teamId} isQuizStarted={isQuizStarted} />
+                            <Program onSubmit={handleCodeSubmit} teamId={teamId} isQuizStarted={isQuizStarted} teamProgress={teamProgress} />
                         ) : null
                     ) : isQuizCompleted ? (
                         <div className="min-h-screen flex items-center justify-center p-4">

@@ -170,22 +170,46 @@ router.post('/code/submit', async (req, res) => {
     try {
         const { teamId, challengeType, code, timeTaken, isAutoSave = false } = req.body;
 
-        console.log('Code submission received:', { teamId, challengeType, codeLength: code?.length, timeTaken, isAutoSave });
+        console.log('Code submission received:', {
+            teamId,
+            challengeType,
+            codeLength: code?.length,
+            codePreview: code?.substring(0, 100),
+            timeTaken,
+            isAutoSave,
+            codeType: typeof code,
+            codeIsEmpty: !code || code.trim() === ''
+        });
 
         if (!teamId) {
+            console.log('❌ Main submission validation failed: Team ID is required');
             return res.status(400).json({ error: 'Team ID is required' });
         }
 
         if (!challengeType) {
+            console.log('❌ Main submission validation failed: Challenge type is required');
             return res.status(400).json({ error: 'Challenge type is required' });
         }
 
-        if (!code) {
-            return res.status(400).json({ error: 'Code is required' });
+        if (!code || code.trim() === '') {
+            console.log('❌ Main submission validation failed: Code is required and cannot be empty');
+            return res.status(400).json({ error: 'Code is required and cannot be empty' });
         }
 
+        if (timeTaken === undefined || timeTaken === null) {
+            console.log('❌ Main submission validation failed: Time taken is required');
+            return res.status(400).json({ error: 'Time taken is required' });
+        }
+
+        if (typeof timeTaken !== 'number' || timeTaken < 0) {
+            console.log('❌ Main submission validation failed: Time taken must be a valid number');
+            return res.status(400).json({ error: 'Time taken must be a valid number' });
+        }
+
+        console.log('✅ Main submission: All validations passed, proceeding with submission');
         const team = await Team.findById(teamId);
         if (!team) {
+            console.log('❌ Main submission: Team not found');
             return res.status(404).json({ error: 'Team not found' });
         }
 
@@ -208,8 +232,13 @@ router.post('/code/submit', async (req, res) => {
             return res.status(400).json({ error: 'Question is locked. Complete the prerequisite aptitude question first.' });
         }
 
-        // Enforce 5-minute cap
-        const maxTime = 300; // 5 minutes in seconds
+        // Enforce time limits based on challenge type
+        const timeLimits = {
+            'debug': 300,    // 5 minutes
+            'trace': 900,    // 15 minutes  
+            'program': 1500  // 25 minutes
+        };
+        const maxTime = timeLimits[challengeType] || 300;
         const actualTimeTaken = Math.min(timeTaken, maxTime);
 
         // Get original questions from database
@@ -293,8 +322,45 @@ router.post('/code/autosave', async (req, res) => {
     try {
         const { teamId, challengeType, code, timeTaken } = req.body;
 
+        console.log('Auto-save received:', {
+            teamId,
+            challengeType,
+            codeLength: code?.length,
+            codePreview: code?.substring(0, 100),
+            timeTaken,
+            codeType: typeof code,
+            codeIsEmpty: !code || code.trim() === ''
+        });
+
+        if (!teamId) {
+            console.log('❌ Auto-save validation failed: Team ID is required');
+            return res.status(400).json({ error: 'Team ID is required' });
+        }
+
+        if (!challengeType) {
+            console.log('❌ Auto-save validation failed: Challenge type is required');
+            return res.status(400).json({ error: 'Challenge type is required' });
+        }
+
+        if (!code || code.trim() === '') {
+            console.log('❌ Auto-save validation failed: Code is required and cannot be empty');
+            return res.status(400).json({ error: 'Code is required and cannot be empty' });
+        }
+
+        if (timeTaken === undefined || timeTaken === null) {
+            console.log('❌ Auto-save validation failed: Time taken is required');
+            return res.status(400).json({ error: 'Time taken is required' });
+        }
+
+        if (typeof timeTaken !== 'number' || timeTaken < 0) {
+            console.log('❌ Auto-save validation failed: Time taken must be a valid number');
+            return res.status(400).json({ error: 'Time taken must be a valid number' });
+        }
+
+        console.log('✅ Auto-save: All validations passed, proceeding with auto-save');
         const team = await Team.findById(teamId);
         if (!team) {
+            console.log('❌ Auto-save: Team not found');
             return res.status(404).json({ error: 'Team not found' });
         }
 
@@ -311,6 +377,15 @@ router.post('/code/autosave', async (req, res) => {
         if (!team.unlockedQuestions[questionNumber]) {
             return res.status(400).json({ error: 'Question is locked' });
         }
+
+        // Enforce time limits based on challenge type
+        const timeLimits = {
+            'debug': 300,    // 5 minutes
+            'trace': 900,    // 15 minutes  
+            'program': 1500  // 25 minutes
+        };
+        const maxTime = timeLimits[challengeType] || 300;
+        const actualTimeTaken = Math.min(timeTaken, maxTime);
 
         // Get original questions from database
         const questions = await Round2Question.findOne({ round: 'Round2' });

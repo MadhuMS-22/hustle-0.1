@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../../../services/api';
 import round2Service from '../../../services/round2Service';
 
-const Program = ({ onSubmit, teamId, isQuizStarted = true }) => {
+const Program = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
     const [code, setCode] = useState('');
     const [timeLeft, setTimeLeft] = useState(1500); // 25 minutes
     const [isRunning, setIsRunning] = useState(false);
@@ -62,7 +62,16 @@ const Program = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const autoSave = async () => {
         if (code.trim() && teamId) {
             try {
-                const timeTaken = Math.max(0, 1500 - timeLeft);
+                // Check if program question is unlocked before attempting autosave
+                if (!teamProgress?.unlockedQuestions?.q6) {
+                    console.log('Program question (q6) is not unlocked yet, skipping autosave');
+                    return;
+                }
+
+                // Ensure timeLeft is a valid number
+                const validTimeLeft = typeof timeLeft === 'number' && !isNaN(timeLeft) ? timeLeft : 1500;
+                const timeTaken = Math.max(0, 1500 - validTimeLeft);
+                console.log('Auto-save - timeLeft:', timeLeft, 'validTimeLeft:', validTimeLeft, 'timeTaken:', timeTaken, 'type:', typeof timeTaken);
                 await apiService.post('/quiz/code/autosave', {
                     teamId,
                     challengeType: 'program',
@@ -72,6 +81,7 @@ const Program = ({ onSubmit, teamId, isQuizStarted = true }) => {
                 console.log('Auto-saved program progress');
             } catch (error) {
                 console.error('Auto-save failed:', error);
+                // Don't show error to user for autosave failures, just log them
             }
         }
     };
@@ -111,7 +121,10 @@ const Program = ({ onSubmit, teamId, isQuizStarted = true }) => {
         if (!code.trim() || submitting) return;
 
         setSubmitting(true);
-        const timeTaken = Math.max(0, 1500 - timeLeft); // Ensure it's never negative or NaN
+        // Ensure timeLeft is a valid number
+        const validTimeLeft = typeof timeLeft === 'number' && !isNaN(timeLeft) ? timeLeft : 1500;
+        const timeTaken = Math.max(0, 1500 - validTimeLeft); // 25 minutes = 1500 seconds
+        console.log('Program submission - timeLeft:', timeLeft, 'validTimeLeft:', validTimeLeft, 'timeTaken:', timeTaken, 'type:', typeof timeTaken);
 
         try {
             await onSubmit(code, timeTaken);

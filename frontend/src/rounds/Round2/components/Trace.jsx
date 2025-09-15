@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../../../services/api';
 import round2Service from '../../../services/round2Service';
 
-const Trace = ({ onSubmit, teamId, isQuizStarted = true }) => {
+const Trace = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
     const [output, setOutput] = useState('');
     const [timeLeft, setTimeLeft] = useState(900); // 15 minutes
     const [isRunning, setIsRunning] = useState(false);
@@ -58,16 +58,33 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const autoSave = async () => {
         if (output.trim() && teamId) {
             try {
-                const timeTaken = Math.max(0, 900 - timeLeft);
+                // Check if trace question is unlocked before attempting autosave
+                if (!teamProgress?.unlockedQuestions?.q4) {
+                    console.log('Trace question (q4) is not unlocked yet, skipping autosave');
+                    return;
+                }
+
+                // Ensure timeLeft is a valid number
+                const validTimeLeft = typeof timeLeft === 'number' && !isNaN(timeLeft) ? timeLeft : 900;
+                const timeTaken = Math.max(0, 900 - validTimeLeft);
+                console.log('Auto-save - timeLeft:', timeLeft, 'validTimeLeft:', validTimeLeft, 'timeTaken:', timeTaken, 'type:', typeof timeTaken);
+                console.log('Auto-save data:', {
+                    teamId,
+                    challengeType: 'trace',
+                    codeLength: output.length,
+                    timeTaken,
+                    codePreview: output.substring(0, 50) + '...'
+                });
                 await apiService.post('/quiz/code/autosave', {
                     teamId,
                     challengeType: 'trace',
-                    code: output,
+                    code: output, // User's trace output
                     timeTaken: timeTaken
                 });
                 console.log('Auto-saved trace progress');
             } catch (error) {
                 console.error('Auto-save failed:', error);
+                // Don't show error to user for autosave failures, just log them
             }
         }
     };
@@ -104,13 +121,30 @@ const Trace = ({ onSubmit, teamId, isQuizStarted = true }) => {
     };
 
     const handleSubmit = async () => {
-        if (!output.trim() || submitting) return;
+        if (!output.trim() || submitting) {
+            console.log('Trace handleSubmit - Cannot submit:', {
+                outputEmpty: !output.trim(),
+                submitting,
+                outputLength: output?.length
+            });
+            return;
+        }
 
         setSubmitting(true);
-        const timeTaken = Math.max(0, 900 - timeLeft); // Ensure it's never negative or NaN
-        const code = codeToTrace; // The code being traced
+        // Ensure timeLeft is a valid number
+        const validTimeLeft = typeof timeLeft === 'number' && !isNaN(timeLeft) ? timeLeft : 900;
+        const timeTaken = Math.max(0, 900 - validTimeLeft); // 15 minutes = 900 seconds
+        const code = output; // The user's trace output, not the original code
+        console.log('Trace submission - timeLeft:', timeLeft, 'validTimeLeft:', validTimeLeft, 'timeTaken:', timeTaken, 'type:', typeof timeTaken);
 
         try {
+            console.log('Trace handleSubmit - About to call onSubmit with:', {
+                code: code?.substring(0, 50) + '...',
+                timeTaken,
+                codeType: typeof code,
+                codeLength: code?.length,
+                codeIsEmpty: !code || code.trim() === ''
+            });
             await onSubmit(code, timeTaken);
         } catch (error) {
             console.error('Error submitting output:', error);

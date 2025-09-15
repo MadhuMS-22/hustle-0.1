@@ -3,7 +3,7 @@ import apiService from '../../../services/api';
 import round2Service from '../../../services/round2Service';
 import SmartAutoSave from '../../../utils/smartAutoSave';
 
-const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
+const Debug = ({ onSubmit, teamId, isQuizStarted = true, teamProgress }) => {
     const [code, setCode] = useState('');
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
     const [isRunning, setIsRunning] = useState(false);
@@ -70,7 +70,16 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
     const autoSave = async () => {
         if (code.trim() && teamId) {
             try {
-                const timeTaken = Math.max(0, 300 - timeLeft); // Ensure it's never negative or NaN
+                // Check if debug question is unlocked before attempting autosave
+                if (!teamProgress?.unlockedQuestions?.q2) {
+                    console.log('Debug question (q2) is not unlocked yet, skipping autosave');
+                    return;
+                }
+
+                // Ensure timeLeft is a valid number
+                const validTimeLeft = typeof timeLeft === 'number' && !isNaN(timeLeft) ? timeLeft : 300;
+                const timeTaken = Math.max(0, 300 - validTimeLeft); // Ensure it's never negative or NaN
+                console.log('Auto-save - timeLeft:', timeLeft, 'validTimeLeft:', validTimeLeft, 'timeTaken:', timeTaken, 'type:', typeof timeTaken);
                 await apiService.post('/quiz/code/autosave', {
                     teamId,
                     challengeType: 'debug',
@@ -80,6 +89,7 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
                 console.log('Auto-saved debug progress');
             } catch (error) {
                 console.error('Auto-save failed:', error);
+                // Don't show error to user for autosave failures, just log them
             }
         }
     };
@@ -106,7 +116,10 @@ const Debug = ({ onSubmit, teamId, isQuizStarted = true }) => {
         if (!code.trim() || submitting) return;
 
         setSubmitting(true);
-        const timeTaken = Math.max(0, 300 - timeLeft); // Ensure it's never negative or NaN
+        // Ensure timeLeft is a valid number
+        const validTimeLeft = typeof timeLeft === 'number' && !isNaN(timeLeft) ? timeLeft : 300;
+        const timeTaken = Math.max(0, 300 - validTimeLeft); // 5 minutes = 300 seconds
+        console.log('Debug submission - timeLeft:', timeLeft, 'validTimeLeft:', validTimeLeft, 'timeTaken:', timeTaken, 'type:', typeof timeTaken);
 
         try {
             await onSubmit(code, timeTaken);
