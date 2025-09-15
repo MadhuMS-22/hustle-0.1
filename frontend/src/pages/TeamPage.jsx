@@ -37,7 +37,7 @@ const TeamPage = () => {
     // Use team data from context
     setTeamData(contextTeamData)
     setTeamName(contextTeamData.teamName || 'Unknown Team')
-    // Fetch real-time team data from backend
+    // Fetch real-time team data from backend (force refresh)
     fetchTeamData(contextTeamData._id, true)
   }, [isAuthenticated, contextTeamData, navigate, authLoading])
 
@@ -73,11 +73,9 @@ const TeamPage = () => {
           // Determine round statuses based on competition status and results announcement
           const updatedRounds = {
             round2: {
-              status: team.competitionStatus === 'Round2' ? 'available' :
-                team.isQuizCompleted && !team.resultsAnnounced ? 'submitted' :
-                  team.isQuizCompleted && team.resultsAnnounced ? 'completed' :
-                    team.competitionStatus === 'Selected' ? 'completed' :
-                      team.competitionStatus === 'Eliminated' ? 'completed' : 'available', // Round 2 is always available
+              status: team.isQuizCompleted && !team.resultsAnnounced ? 'submitted' :
+                team.isQuizCompleted && team.resultsAnnounced ? 'completed' :
+                  'available', // Round 2 is always available
               result: (team.resultsAnnounced && team.isQuizCompleted) ?
                 (['Round3', 'Selected'].includes(team.competitionStatus) ? true : false) : null,
               score: team.scores?.round2 || null,
@@ -87,18 +85,26 @@ const TeamPage = () => {
             },
             round3: {
               status: (() => {
-                const status = team.competitionStatus === 'Round3' ? 'available' :
-                  team.round3Completed && !team.resultsAnnounced ? 'submitted' :
-                    team.round3Completed && team.resultsAnnounced ? 'completed' :
-                      team.competitionStatus === 'Selected' ? 'available' :
-                        team.competitionStatus === 'Eliminated' ? 'completed' :
-                          team.resultsAnnounced ? 'available' : 'locked';
+                // Round 3 logic:
+                // 1. If Round 2 completed AND results announced AND qualified → available
+                // 2. If Round 3 completed → submitted (always show submitted message)
+                // 3. Otherwise → locked
+
+                const isRound2Completed = team.isQuizCompleted;
+                const isRound2ResultsAnnounced = team.resultsAnnounced;
+                const qualifiedForRound3 = ['Round3', 'Selected'].includes(team.competitionStatus);
+
+                const status = team.round3Completed ? 'submitted' :
+                  (isRound2Completed && isRound2ResultsAnnounced && qualifiedForRound3) ? 'available' : 'locked';
 
                 // Debug: Log Round 3 status determination
                 console.log('🎯 Round 3 status determination:', {
                   competitionStatus: team.competitionStatus,
                   round3Completed: team.round3Completed,
                   resultsAnnounced: team.resultsAnnounced,
+                  isRound2Completed,
+                  isRound2ResultsAnnounced,
+                  qualifiedForRound3,
                   determinedStatus: status
                 });
 
@@ -153,6 +159,30 @@ const TeamPage = () => {
     }
   }, [teamData?._id, teamData?.competitionStatus])
 
+  // Add visibility change listener to refresh data when user comes back to tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && teamData?._id) {
+        // Refresh team data when user comes back to the tab
+        fetchTeamData(teamData._id, false)
+      }
+    }
+
+    const handleFocus = () => {
+      if (teamData?._id) {
+        // Refresh team data when user focuses on the window
+        fetchTeamData(teamData._id, false)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [teamData?._id])
+
   const handleLogout = () => {
     // Use the logout method from AuthContext
     logout()
@@ -204,6 +234,10 @@ const TeamPage = () => {
       // If results are announced, check if passed or failed
       return round.result ? 'passed' : 'failed'
     }
+    // If round is submitted, return submitted
+    else if (round.status === 'submitted') {
+      return 'submitted'
+    }
     // If round is available, return available
     else if (round.status === 'available') {
       return 'available'
@@ -239,6 +273,8 @@ const TeamPage = () => {
       case 'submitted':
         if (roundNumber === 2) {
           return `Your Round 2 submission has been received successfully! Please wait for results to be announced.`
+        } else if (roundNumber === 3) {
+          return `You successfully submitted Round 3. Wait for final result.`
         } else {
           return `Round ${roundNumber} completed. Waiting for results to be announced.`
         }
@@ -252,7 +288,7 @@ const TeamPage = () => {
         }
       case 'locked':
         if (roundNumber === 3) {
-          return `Round 3 is locked. Complete Round 2 and wait for results to be announced.`
+          return `Round 3 is locked until Round 2 result is announced.`
         } else {
           return `Locked. Complete previous round to unlock.`
         }
@@ -320,7 +356,6 @@ const TeamPage = () => {
               Welcome, {teamName}!
             </h1>
             <p className='text-lg text-gray-300 mb-4'>Your team dashboard -  start new rounds</p>
-
           </div>
         </div>
 
@@ -394,10 +429,8 @@ const TeamPage = () => {
 
               {/* Round 3 */}
               <div className={classNames('p-8 rounded-3xl text-center glass-dark shadow-2xl w-full flex flex-col justify-center items-center gap-6 transition-all duration-500 hover:scale-105 hover:glow-purple', {
-                "bg-green-600/40 border-green-400/50": rounds.round3.status === 'completed' && rounds.round3.result === true && rounds.round3.announced,
-                "bg-red-600/40 border-red-400/50": rounds.round3.status === 'completed' && rounds.round3.result === false && rounds.round3.announced,
                 "bg-blue-600/20 border-blue-400/30": rounds.round3.status === 'submitted',
-                "bg-orange-600/20 border-orange-400/30": rounds.round3.status === 'available' || (rounds.round3.status === 'completed' && !rounds.round3.announced),
+                "bg-orange-600/20 border-orange-400/30": rounds.round3.status === 'available',
                 "bg-gray-600/20 border-gray-400/30": rounds.round3.status === 'locked'
               })}>
                 <div className='flex flex-col items-center gap-4'>
@@ -418,26 +451,6 @@ const TeamPage = () => {
                   >
                     Locked
                   </button>
-                ) : rounds.round3.status === 'completed' ? (
-                  rounds.round3.announced ? (
-                    <div className="text-center">
-                      <div className="text-white text-lg font-bold mb-1">
-                        {rounds.round3.result === true ? '✅ SELECTED!' : '❌ NOT SELECTED'}
-                      </div>
-                      <div className="text-gray-200 text-sm">
-                        Results announced
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <div className="text-orange-300 text-lg font-bold mb-1">
-                        Round 3 Completed
-                      </div>
-                      <div className="text-gray-300 text-sm">
-                        Waiting for results...
-                      </div>
-                    </div>
-                  )
                 ) : rounds.round3.status === 'submitted' ? (
                   <div className="text-center">
                     <div className="text-green-300 text-lg font-bold mb-1">

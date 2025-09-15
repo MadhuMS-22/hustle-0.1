@@ -989,6 +989,11 @@ const Round3Page = () => {
 
       console.log('✅ Round 3 submission response:', response);
       setFeedbackMessage('Your responses have been successfully submitted!');
+
+      // Redirect to team page after successful submission
+      setTimeout(() => {
+        window.location.href = '/team';
+      }, 2000);
     } catch (error) {
       console.error('Error saving score:', error);
       setFeedbackMessage('An error occurred while submitting. Please try again.');
