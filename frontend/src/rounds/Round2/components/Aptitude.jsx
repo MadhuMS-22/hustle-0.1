@@ -78,7 +78,7 @@ const Aptitude = ({ questionStep, onSubmit, teamProgress }) => {
                         {teamProgress && (
                             <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-xl p-3 max-w-md mx-auto mb-4">
                                 <p className="text-yellow-300 text-sm font-semibold">
-                                    You have {2 - (teamProgress.aptitudeAttempts?.[`q${questionStep + 1}`] || 0)} out of 2 attempts remaining
+                                    You have {2 - (teamProgress.aptitudeAttempts?.[questionStep === 0 ? 'q1' : questionStep === 1 ? 'q3' : 'q5'] || 0)} out of 2 attempts remaining
                                 </p>
                             </div>
                         )}

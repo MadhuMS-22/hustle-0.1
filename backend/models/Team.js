@@ -187,8 +187,8 @@ const teamSchema = new mongoose.Schema({
     },
     aptitudeAttempts: {
         q1: { type: Number, default: 0 },
-        q2: { type: Number, default: 0 },
-        q3: { type: Number, default: 0 }
+        q3: { type: Number, default: 0 },
+        q5: { type: Number, default: 0 }
     }
 }, {
     timestamps: true
