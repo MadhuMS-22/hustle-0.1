@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeNavbar from '../components/HomeNavbar';
 import Footer from '../components/Footer';
+import logo from '../assets/h-logo.svg';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const HomePage = () => {
             <div className="flex justify-center mb-6">
               <div className="h-32 sm:h-40 w-full max-w-4xl relative overflow-hidden rounded-lg">
                 <img
-                  src="/h-logo.svg"
+                  src={logo}
                   alt="Coding Icon"
                   className="w-full h-full object-cover object-center hover:scale-110 transition-all duration-500"
                 />

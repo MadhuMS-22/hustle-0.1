@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import logo from '../assets/h-logo.svg';
 
 const HomeNavbar = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const HomeNavbar = () => {
           <div className="flex items-center space-x-2">
             <button onClick={() => navigate('/')} className="flex items-center group">
               <div className="h-12 w-18 relative overflow-hidden rounded-lg">
-                <img src="/h-logo.svg" alt="Hustle Logo" className="w-full h-full object-cover object-center group-hover:scale-110 transition-all duration-500" />
+                <img src={logo} alt="Hustle Logo" className="w-full h-full object-cover object-center group-hover:scale-110 transition-all duration-500" />
               </div>
             </button>
           </div>

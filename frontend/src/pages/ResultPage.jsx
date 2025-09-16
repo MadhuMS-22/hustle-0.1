@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import CodeVerification from '../components/CodeVerification'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import logo from '../assets/h-logo.svg'
 
 const TeamPage = () => {
   const navigate = useNavigate()
@@ -93,7 +94,7 @@ const TeamPage = () => {
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-center mb-6">
               <div className="h-24 w-32 relative overflow-hidden rounded-lg">
-                <img src="/h-logo.svg" alt="Team Icon" className="w-full h-full object-cover object-center" />
+                <img src={logo} alt="Team Icon" className="w-full h-full object-cover object-center" />
               </div>
             </div>
             <h1 className='text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent'>

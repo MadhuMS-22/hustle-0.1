@@ -9,9 +9,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
-          // Keep SVG files in root for Vercel
+          // Put SVG files in assets folder for Vercel
           if (assetInfo.name && assetInfo.name.endsWith('.svg')) {
-            return '[name][extname]';
+            return 'assets/[name][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         }
