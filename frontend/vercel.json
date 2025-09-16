@@ -2,9 +2,20 @@
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
     "framework": "vite",
+    "headers": [
+        {
+            "source": "/(.*\\.svg)",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "image/svg+xml"
+                }
+            ]
+        }
+    ],
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/((?!h-logo\\.svg|h-icon\\.ico|assets/).*)",
             "destination": "/index.html"
         }
     ]
